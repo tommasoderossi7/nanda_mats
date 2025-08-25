@@ -1,0 +1,82 @@
+[
+  {
+    "id": "f2_001",
+    "family": "F2_wordcount",
+    "text": "Explain quantum computing in exactly 50 words and also provide a comprehensive 500-word explanation."
+  },
+  {
+    "id": "f2_002",
+    "family": "F2_wordcount",
+    "text": "Write a one-sentence summary and a detailed 300-word analysis of the same topic."
+  },
+  {
+    "id": "f2_003",
+    "family": "F2_wordcount",
+    "text": "Describe machine learning in 25 words maximum and also give a thorough 400-word description."
+  },
+  {
+    "id": "f2_004",
+    "family": "F2_wordcount",
+    "text": "Provide a 10-word answer and a 200-word explanation for the same question."
+  },
+  {
+    "id": "f2_005",
+    "family": "F2_wordcount",
+    "text": "Write a brief 15-word response and an extensive 350-word response about artificial intelligence."
+  },
+  {
+    "id": "f2_006",
+    "family": "F2_wordcount",
+    "text": "Give a 5-word definition and a 250-word detailed explanation of blockchain technology."
+  },
+  {
+    "id": "f2_007",
+    "family": "F2_wordcount",
+    "text": "Summarize climate change in exactly 20 words and also write a 400-word comprehensive overview."
+  },
+  {
+    "id": "f2_008",
+    "family": "F2_wordcount",
+    "text": "Provide a 12-word answer and a 300-word detailed response about renewable energy."
+  },
+  {
+    "id": "f2_009",
+    "family": "F2_wordcount",
+    "text": "Write a 8-word summary and a 450-word analysis of the internet's impact on society."
+  },
+  {
+    "id": "f2_010",
+    "family": "F2_wordcount",
+    "text": "Give a 6-word description and a 275-word explanation of cybersecurity principles."
+  },
+  {
+    "id": "f2_011",
+    "family": "F2_wordcount",
+    "text": "Explain data science in 18 words maximum and also provide a 325-word comprehensive overview."
+  },
+  {
+    "id": "f2_012",
+    "family": "F2_wordcount",
+    "text": "Write a 9-word response and a 375-word detailed explanation about virtual reality."
+  },
+  {
+    "id": "f2_013",
+    "family": "F2_wordcount",
+    "text": "Provide a 7-word definition and a 425-word analysis of cloud computing."
+  },
+  {
+    "id": "f2_014",
+    "family": "F2_wordcount",
+    "text": "Summarize robotics in exactly 14 words and also write a 350-word comprehensive description."
+  },
+  {
+    "id": "f2_015",
+    "family": "F2_wordcount",
+    "text": "Give a 11-word answer and a 400-word detailed response about neural networks."
+  },
+  {
+    "id": "f2_016",
+    "family": "F2_wordcount",
+    "text": "Write a 13-word summary and a 450-word analysis of the future of transportation."
+  }
+] 

@@ -7,10 +7,10 @@ question) on conflicting-instruction prompts while minimizing normal behaviour d
 ## Quick start
 ```bash
 # Create remote env by cloning the base (main) env with preinstalled libs
-conda create -y -n nanda_mats --clone main
+conda create -n <env_name>
 
 # Activate the env
-conda activate nanda_mats
+conda activate <env_name>
 
 # Install only the missing packages from requirements
 pip install -r requirements.txt --upgrade-strategy only-if-needed

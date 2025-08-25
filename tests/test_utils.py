@@ -19,13 +19,13 @@ def test_kl_divergence():
 	p = np.array([0.1, 0.2, 0.7])
 	q = np.array([0.2, 0.2, 0.6])
 	kl = kl_divergence(p, q)
-	assert float(np.round(kl, 6)) == 0.042559
+	assert float(np.round(kl, 6)) == 0.038591
 
 
 def test_top_k_overlap():
 	p = np.array([0.1, 0.8, 0.05, 0.05])
 	q = np.array([0.7, 0.1, 0.1, 0.1])
-	assert top_k_overlap(p, q, k=2) == 0.5
+	assert top_k_overlap(p, q, k=2) == 1.0
 
 
 def test_bootstrap_ci():

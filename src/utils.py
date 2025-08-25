@@ -91,7 +91,7 @@ def kl_divergence(p: np.ndarray, q: np.ndarray, axis: int = -1, eps: float = 1e-
 	>>> p = np.array([0.1, 0.2, 0.7])
 	>>> q = np.array([0.2, 0.2, 0.6])
 	>>> float(np.round(kl_divergence(p, q), 6))
-	0.042559
+	0.038591
 	"""
 	p = np.clip(p, eps, 1.0)
 	q = np.clip(q, eps, 1.0)
@@ -115,8 +115,8 @@ def top_k_overlap(p: np.ndarray, q: np.ndarray, k: int = 10) -> float:
 	if p.shape[0] != q.shape[0]:
 		raise ValueError("p and q must have same length")
 	k = min(k, p.shape[0])
-	idx_p = np.argpartition(-p, kth=k - 1)[:k]
-	idx_q = np.argpartition(-q, kth=k - 1)[:k]
+	idx_p = np.argsort(-p)[:k]
+	idx_q = np.argsort(-q)[:k]
 	return float(len(set(idx_p.tolist()) & set(idx_q.tolist())) / k)
 
 

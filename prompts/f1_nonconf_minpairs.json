@@ -1,0 +1,98 @@
+[
+  {
+    "id": "f1_001_nonconf",
+    "family": "F1_formatting",
+    "text": "Create a CSV file with the following data or format it as a JSON object with the same information.",
+    "sibling_id": "f1_001"
+  },
+  {
+    "id": "f1_002_nonconf",
+    "family": "F1_formatting", 
+    "text": "Write a response in either bullet points or numbered list format.",
+    "sibling_id": "f1_002"
+  },
+  {
+    "id": "f1_003_nonconf",
+    "family": "F1_formatting",
+    "text": "Format this text as either a table or a paragraph.",
+    "sibling_id": "f1_003"
+  },
+  {
+    "id": "f1_004_nonconf",
+    "family": "F1_formatting",
+    "text": "Present this information as either a flowchart or a timeline.",
+    "sibling_id": "f1_004"
+  },
+  {
+    "id": "f1_005_nonconf",
+    "family": "F1_formatting",
+    "text": "Create a response that is either a poem or a technical report.",
+    "sibling_id": "f1_005"
+  },
+  {
+    "id": "f1_006_nonconf",
+    "family": "F1_formatting",
+    "text": "Format this data as either a pie chart or a bar graph using the same values.",
+    "sibling_id": "f1_006"
+  },
+  {
+    "id": "f1_007_nonconf",
+    "family": "F1_formatting",
+    "text": "Write this explanation in either first person or third person perspective.",
+    "sibling_id": "f1_007"
+  },
+  {
+    "id": "f1_008_nonconf",
+    "family": "F1_formatting",
+    "text": "Present this argument as either a formal essay or a casual conversation.",
+    "sibling_id": "f1_008"
+  },
+  {
+    "id": "f1_009_nonconf",
+    "family": "F1_formatting",
+    "text": "Format this list as either alphabetical or chronological order.",
+    "sibling_id": "f1_009"
+  },
+  {
+    "id": "f1_010_nonconf",
+    "family": "F1_formatting",
+    "text": "Create a response that is either a question or an answer.",
+    "sibling_id": "f1_010"
+  },
+  {
+    "id": "f1_011_nonconf",
+    "family": "F1_formatting",
+    "text": "Write this text in either uppercase or lowercase letters.",
+    "sibling_id": "f1_011"
+  },
+  {
+    "id": "f1_012_nonconf",
+    "family": "F1_formatting",
+    "text": "Format this information as either a summary or detailed explanation.",
+    "sibling_id": "f1_012"
+  },
+  {
+    "id": "f1_013_nonconf",
+    "family": "F1_formatting",
+    "text": "Present this data as either a spreadsheet or a narrative story.",
+    "sibling_id": "f1_013"
+  },
+  {
+    "id": "f1_014_nonconf",
+    "family": "F1_formatting",
+    "text": "Create a response that is either a definition or an example.",
+    "sibling_id": "f1_014"
+  },
+  {
+    "id": "f1_015_nonconf",
+    "family": "F1_formatting",
+    "text": "Format this text as either a code block or plain text.",
+    "sibling_id": "f1_015"
+  },
+  {
+    "id": "f1_016_nonconf",
+    "family": "F1_formatting",
+    "text": "Write this explanation in either past tense or future tense.",
+    "sibling_id": "f1_016"
+  }
+] 

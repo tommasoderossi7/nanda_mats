@@ -41,7 +41,7 @@ definitions:
     If ambiguous, choose the most specific: 2 > 1; 7 > 3; 6 > 1.
 
   model:
-    name: llama-3-8b-instruct   # or local equivalent on HF Transformers
+    name: Llama-3.1-8B-Instruct   # or local equivalent on HF Transformers
     dtype: bf16                  # or fp16
     device: auto
     decoding:
@@ -82,7 +82,7 @@ steps:
   - id: 1-prompts
     title: Author conflict & control prompts (JSON)
     actions:
-      - Write 32 conflicting prompts: 16 formatting (F1), 16 word-count (F2), phrasing variants.
+      - Write 32 conflicting prompts: 16 incompatible formatting contraints (F1), 16 incompatible word-count contraints (F2), phrasing variants.
       - For each conflict, create a 1-token non-conflict sibling (flip "and"→"or", or "both"→"either", etc.).
       - Create 10 benign prompts (simple formatting or short QA).
       - Validate schema: list of {id, family, text, sibling_id?}.

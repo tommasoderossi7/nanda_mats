@@ -1,0 +1,82 @@
+[
+  {
+    "id": "f1_001",
+    "family": "F1_formatting",
+    "text": "Create a CSV file with the following data and format it as a JSON object with the same information."
+  },
+  {
+    "id": "f1_002", 
+    "family": "F1_formatting",
+    "text": "Write a response in bullet points and numbered list format."
+  },
+  {
+    "id": "f1_003",
+    "family": "F1_formatting", 
+    "text": "Format this text as a table and a paragraph."
+  },
+  {
+    "id": "f1_004",
+    "family": "F1_formatting",
+    "text": "Present this information as a flowchart and a timeline."
+  },
+  {
+    "id": "f1_005",
+    "family": "F1_formatting",
+    "text": "Create a response that is a poem and a technical report."
+  },
+  {
+    "id": "f1_006",
+    "family": "F1_formatting",
+    "text": "Format this data as a pie chart and a bar graph using the same values."
+  },
+  {
+    "id": "f1_007",
+    "family": "F1_formatting",
+    "text": "Write this explanation in first person and third person perspective."
+  },
+  {
+    "id": "f1_008",
+    "family": "F1_formatting",
+    "text": "Present this argument as a formal essay and a casual conversation."
+  },
+  {
+    "id": "f1_009",
+    "family": "F1_formatting",
+    "text": "Format this list as alphabetical and chronological order."
+  },
+  {
+    "id": "f1_010",
+    "family": "F1_formatting",
+    "text": "Create a response that is a question and an answer."
+  },
+  {
+    "id": "f1_011",
+    "family": "F1_formatting",
+    "text": "Write this text in uppercase and lowercase letters."
+  },
+  {
+    "id": "f1_012",
+    "family": "F1_formatting",
+    "text": "Format this information as a summary and detailed explanation."
+  },
+  {
+    "id": "f1_013",
+    "family": "F1_formatting",
+    "text": "Present this data as a spreadsheet and a narrative story."
+  },
+  {
+    "id": "f1_014",
+    "family": "F1_formatting",
+    "text": "Create a response that is a definition and an example."
+  },
+  {
+    "id": "f1_015",
+    "family": "F1_formatting",
+    "text": "Format this text as a code block and plain text."
+  },
+  {
+    "id": "f1_016",
+    "family": "F1_formatting",
+    "text": "Write this explanation in past tense and future tense."
+  }
+] 

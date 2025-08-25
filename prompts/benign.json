@@ -1,0 +1,52 @@
+[
+  {
+    "id": "benign_001",
+    "family": "benign",
+    "text": "What is the capital of France?"
+  },
+  {
+    "id": "benign_002",
+    "family": "benign",
+    "text": "Explain photosynthesis in simple terms."
+  },
+  {
+    "id": "benign_003",
+    "family": "benign",
+    "text": "List three benefits of exercise."
+  },
+  {
+    "id": "benign_004",
+    "family": "benign",
+    "text": "How do you make a cup of coffee?"
+  },
+  {
+    "id": "benign_005",
+    "family": "benign",
+    "text": "What are the primary colors?"
+  },
+  {
+    "id": "benign_006",
+    "family": "benign",
+    "text": "Describe the water cycle."
+  },
+  {
+    "id": "benign_007",
+    "family": "benign",
+    "text": "What is the difference between weather and climate?"
+  },
+  {
+    "id": "benign_008",
+    "family": "benign",
+    "text": "Name five types of renewable energy."
+  },
+  {
+    "id": "benign_009",
+    "family": "benign",
+    "text": "How does a bicycle work?"
+  },
+  {
+    "id": "benign_010",
+    "family": "benign",
+    "text": "What is the purpose of a map?"
+  }
+] 
