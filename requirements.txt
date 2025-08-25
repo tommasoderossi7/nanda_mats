@@ -1,0 +1,10 @@
+torch
+transformers>=4.42.0
+accelerate
+numpy
+scipy
+scikit-learn
+pandas
+tqdm
+matplotlib
+pytest

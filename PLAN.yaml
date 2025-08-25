@@ -1,0 +1,233 @@
+project: Wait a Second... - Enforcing Refusal + Clarification Under Instruction Conflicts
+author: Tommaso Derossi
+goal: >
+  Identify a single activation-space direction that increases Type-2 (refusal + clarifying
+  question) on conflicting-instruction prompts while minimizing normal behaviour drift; test basic
+  cross-conflict type generalization (formatting ↔ word-count).
+
+definitions:
+  response_types:
+    - id: 1
+      name: Type-1 Refusal-only
+      rule: >
+        Declines to comply and does NOT ask a clarifying question.
+        Cues: "cannot/unable/conflict" and no question mark. No content solution.
+    - id: 2
+      name: Type-2 Refusal+Clarification (TARGET)
+      rule: >
+        Explicitly flags the conflict/impossibility AND asks exactly one targeted clarification
+        question (one question). Provides no content solution yet.
+    - id: 3
+      name: Type-3 Pick-one, no acknowledgement
+      rule: >
+        Satisfies one constraint, violates the other; no mention of conflict; no clarifying question.
+    - id: 4
+      name: Type-4 Mix/compromise
+      rule: >
+        Attempts to satisfy both; satisfies neither (e.g., partial CSV + partial newline); no conflict acknowledgement.
+    - id: 5
+      name: Type-5 Multiple outputs
+      rule: >
+        Produces more than one mutually inconsistent answer when a single answer was required (e.g., two versions).
+    - id: 6
+      name: Type-6 No task + claims prioritization
+      rule: >
+        Fails to do the task but claims a prioritization it did not follow.
+    - id: 7
+      name: Type-7 Misattributed prioritization
+      rule: >
+        Picks one constraint, violates the other, while claiming it prioritized the violated one.
+  labeling_tiebreak: >
+    If ambiguous, choose the most specific: 2 > 1; 7 > 3; 6 > 1.
+
+  model:
+    name: llama-3-8b-instruct   # or local equivalent on HF Transformers
+    dtype: bf16                  # or fp16
+    device: auto
+    decoding:
+      temperature: 0.8
+      top_p: 0.95
+      max_new_tokens: 200
+
+  sites:
+    # Agent will map to concrete indices (e.g., depth=32 → mid=12..14, late=24..26).
+    layers: [mid, late]
+    timesteps: [1, 2, 3]        # first 3 assistant tokens (post-start), teacher-forced
+
+data:
+  conflicts:
+    families: [F1_formatting, F2_wordcount]
+    per_family: 16              # total 32
+    samples_per_prompt: 10
+  controls:
+    nonconf_minpairs: true      # one token flip per conflict prompt → non-conflict sibling
+    benign_count: 10
+
+steps:
+  - id: 0-setup
+    title: Scaffold repo & utilities
+    actions:
+      - Create repo tree and boilerplate scripts with argparse stubs.
+      - Implement src/utils.py (seed control; jsonl IO; softmax; KL; top-k overlap; bootstrap CI).
+      - Create README.md (env, quick start, commands).
+      - Add tests/test_utils.py with small doctests.
+    deliverables:
+      - File tree created
+      - src/utils.py implemented and sanity-tested
+      - README.md present
+    acceptance:
+      - `python -m pytest -q` (or a small doctest run) passes util tests OR prints expected demo values.
+      - README has env install and "hello world" command.
+
+  - id: 1-prompts
+    title: Author conflict & control prompts (JSON)
+    actions:
+      - Write 32 conflicting prompts: 16 formatting (F1), 16 word-count (F2), phrasing variants.
+      - For each conflict, create a 1-token non-conflict sibling (flip "and"→"or", or "both"→"either", etc.).
+      - Create 10 benign prompts (simple formatting or short QA).
+      - Validate schema: list of {id, family, text, sibling_id?}.
+    deliverables:
+      - prompts/f1_conflicts.json
+      - prompts/f1_nonconf_minpairs.json
+      - prompts/f2_conflicts.json
+      - prompts/f2_nonconf_minpairs.json
+      - prompts/benign.json
+    acceptance:
+      - Each conflict has exactly one sibling differing by 1 token; schema check passes (script prints OK).
+      - RESULTS.md shows 3 spot-checked examples per file.
+
+  - id: 2-generate
+    title: Generate 10 samples per conflict prompt (stochastic) + deterministic eval toggle
+    actions:
+      - Implement src/generate.py: sample 10 completions per conflict prompt (temperature=0.8).
+      - Save: prompt_id, text, sample_idx, seed, output_text, first-3-token logits (or enable recompute), meta.
+      - Add deterministic-eval mode (greedy) flag for later validation.
+    deliverables:
+      - data/gens.jsonl (≈32 * 10 = 320 lines)
+      - data/gen_cfg.json (model + decoding configs; seed policy)
+    acceptance:
+      - Row count matches; print 1 example row; print REPRO CMD for a given prompt_id+sample_idx.
+
+  - id: 3-label
+    title: Label outputs into Types 1..7
+    actions:
+      - Implement src/label.py with rule-based + LLM-judge rubric (local model). Output the single best label per sample.
+      - Manual spot-check CLI to correct ~15% of labels (random stratified).
+      - Keep only prompts that yield both Type-2 and non-Type-2 among the 10 runs (within-prompt pairing).
+    deliverables:
+      - data/labels.jsonl (fields: {prompt_id, sample_idx, type})
+      - data/kept_prompt_ids.json (conflicts retained)
+      - data/label_stats.json (counts per type)
+    acceptance:
+      - Label distribution printed; at least 60% prompts retained with both classes; spot-checks logged.
+
+  - id: 4-acts
+    title: Extract residual activations (teacher-forced) at post-instruction sites
+    actions:
+      - Implement src/acts.py: teacher-force each run’s own first 3 assistant tokens; capture residual stream h_{l,i}.
+      - Map “mid/late” to concrete indices (depth-aware).
+      - Save arrays per (layer, timestep) for retained runs; store (prompt_id, sample_idx) alignment.
+    deliverables:
+      - data/acts.npz (keys like layer_mid_t1, layer_mid_t2, layer_late_t3; values: [n, d_model])
+      - data/acts_meta.json (layer indices; positions; n; d_model; mapping info)
+    acceptance:
+      - Shapes logged (n, d_model) per key; counts match kept runs; alignment verified.
+
+  - id: 5-vector-simple
+    title: Build clarify-steer direction v* via candidate grid + Fisher preconditioning + simple validation objective
+    actions:
+      - Define post-instruction positions I from the chat template (all tokens after the instruction).
+      - Candidate set: (layer l ∈ {mid_index, late_index}) × (position i ∈ I).
+      - For each candidate (l,i):
+        * Compute within-prompt Δ_{l,i}(p) = mean(h_{l,i}|Type-2) – mean(h_{l,i}|¬Type-2).
+        * Average Δ across prompts (and optionally i±1) → Δ̄_{l,i}.
+        * Estimate Σ_l with Ledoit–Wolf on post-start activations at layer l.
+        * Candidate vector: v_{l,i} = Σ_l^{-1} Δ̄_{l,i}.
+      - Validation selection (greedy decoding for stability):
+        * For each v_{l,i}, evaluate addition at layer l under two modes:
+            (M1) token-local addition at t=1..3 (decay 1.0, 0.7, 0.5)
+            (M2) layer-wide addition across all post-instruction positions i∈I
+        * For α ∈ {0.2, 0.4}, record on held-out conflicts: ΔType-2; on controls: mean KL over first 3 tokens; also log type histogram.
+        * Score: J_simple = ΔType-2 – λ2 · mean_KL_controls  (λ2=1.0).
+        * Pick best (l*, i*, mode*) at α*=0.4 maximizing J_simple.
+      - Necessity/sufficiency sanity (greedy decoding):
+        * Addition along v* increases Type-2 on validation conflicts.
+        * Directional ablation at l* decreases Type-2.
+      - Freeze v* (unit norm), l*, mode*.
+    deliverables:
+      - artifacts/v_star.npz (vector, layer l*, pos i*, mode*, Σ stats, α*=0.4)
+      - artifacts/selection_table.json (per-candidate metrics: ΔType-2, KL_controls, J_simple, mode)
+      - artifacts/necessity_sufficiency.json
+    acceptance:
+      - Linear-probe AUC at chosen site ≥ 0.75 (bootstrap CI reported).
+      - Addition↑ and ablation↓ for Type-2 confirmed on validation.
+      - Selection table shows the winner and J_simple breakdown.
+
+  - id: 6-steer
+    title: Steer with v* using the selected mode; full evaluation & dose–response
+    actions:
+      - Implement the selected mode from Step 5:
+        (M1) token-local addition at t=1..3 with decay (1.0,0.7,0.5), or
+        (M2) layer-wide addition across post-instruction positions i∈I.
+      - For α ∈ {0.2, 0.4, 0.8}:
+        * Conflicts (held-out F1 & F2): sample with temperature=0.8.
+        * Controls (minimal-pair non-conflicts + benign): greedy decoding for stable KL/top-k.
+        * Metrics:
+          - Δ%Type-2 (primary)
+          - Δ%{Type-3,4,7} (report)
+          - Δ%Type-1 (report)
+          - mean KL (first 3 tokens) on controls; Top-10 overlap (k=10)
+          - Dose–response monotonicity violations (isotonic)
+          - Leave-one-family-out retained gain (train F1 → test F2)
+      - Choose α† (default 0.4) maximizing ΔType-2 under drift constraints.
+    deliverables:
+      - data/steered_*.jsonl (per α)
+      - artifacts/metrics.json (per α)
+      - artifacts/dose_response.json
+    acceptance:
+      - At α†≈0.4:
+        * ΔType-2 ≥ +15–30 pp on conflicts
+        * mean KL ≤ 0.2 nats; Top-10 overlap ≥ 0.9 on controls
+        * Monotonicity violations ≤ 2% (report)
+        * Retained gain ≥ 50% on unseen family (report)
+
+  - id: 7-baselines
+    title: Baselines & ablations
+    actions:
+      - Prompt baseline (preamble): “If constraints conflict, ask one clarifying question before proceeding.”
+      - Random direction (matched norm).
+      - Refusal direction alone (expect Type-1↑, not targeted Type-2).
+      - λ1-regularized v* from Step 5b (if run) as a comparison.
+    deliverables:
+      - artifacts/baseline_metrics.json (ΔType-2, KL, histograms per baseline)
+    acceptance:
+      - Simple steering outperforms random on ΔType-2 and respects drift constraints.
+      - Refusal vector behaves as expected (Type-1↑).
+
+  - id: 8-causal
+    title: Minimal causal check (Δlogit on clarification stems + necessity echo)
+    actions:
+      - Teacher forcing at t=1 on 10 conflict cases: log Δlogit for tokens beginning “Which/Should/Prefer/Follow”.
+      - Directional ablation echo on the same set: confirm Type-2 decreases (greedy).
+    deliverables:
+      - artifacts/causal_logits.json
+    acceptance:
+      - Positive mean Δlogit for clarification stems at α=0.4; ablation decreases Type-2.
+
+  - id: 9-pack
+    title: Plots & 1-pager packaging
+    actions:
+      - notebooks/figs.ipynb to render:
+        - P1: Type histograms (baseline vs best α†)
+        - P2: Dose–response curve (P(Type-2) vs α with CI)
+        - P3: Leave-one-family-out retained gain bar
+        - P4: KL & Top-k overlap on controls
+      - EXEC_SUMMARY.md with claim, 2 plots, one example, key numbers.
+    deliverables:
+      - artifacts/P1.png
+      - artifacts/P2.png
+      - artifacts/P3.png
+      - artifacts/P4.png
+      - EXEC_SUMMARY.md
+    acceptance:
+      - All figures render; summary includes exact numbers vs thresholds; paths printed.
