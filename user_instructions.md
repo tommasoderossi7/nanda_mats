@@ -1,17 +1,19 @@
+SETUP VM & SYNC CODE-DATA
+
 STEP 1
 Connect to the host via ssh
 ctrl+shift+p > remote ssh - connect to host
 
 STEP 2
 # Create a workspace folder on the remote (run from local terminal)
-$ssh nanda_mats 'mkdir -p ~/workspace/nanda_mats'
+$ssh nanda_mats 'mkdir -p /workspace/nanda_mats'
 
 STEP 3
 # To update remote directory (with data not synced in github repo)
 # Run from the local terminal within the directory that contains the local nanda_mats/ folder
 $rsync -avz --progress --delete \
   --exclude '.git/' --exclude '__pycache__/' --exclude '.venv/' --exclude 'node_modules/' \
-  ./nanda_mats/  nanda_mats:~/workspace/nanda_mats/
+  ./nanda_mats/  nanda_mats:/workspace/nanda_mats/
 
 STEP 4
 # install conda-pack (in ANY env, base is fine)
@@ -23,20 +25,28 @@ $conda pack -n main -o /tmp/main.tar.gz
 
 STEP 6
 # create the new env directory and unpack
-$mkdir -p /venv/nanda_mats
-$tar -xzf /tmp/main.tar.gz -C /venv/nanda_mats
+$mkdir -p /workspace/nanda_mats/venv/nanda_mats
+$tar -xzf /tmp/main.tar.gz -C /workspace/nanda_mats/venv/nanda_mats
 
 STEP 7
 # fix absolute paths inside the clone
-$/venv/nanda_mats/bin/conda-unpack
+$/workspace/nanda_mats/venv/nanda_mats/bin/conda-unpack
 
 STEP 8
 # activate the env
-$conda activate /venv/nanda_mats
+$conda activate /workspace/nanda_mats/venv/nanda_mats
 
 STEP 9
-# install in the env only the packages listed in requirements that where not present in the base (main) env
-$pip install -r requirements.txt --upgrade-strategy only-if-needed
+# save in a file the dependencies to avoid touching with pip install requirements.txt
+$pip freeze > /tmp/pinned.txt
+
+STEP 10
+# install in the env only the packages listed in requirements that where not present in the base (main) env (to not break dependencies)
+$pip install -r requirements.txt -c /tmp/pinned.txt --upgrade-strategy only-if-needed
+
+STEP 11
+# verify dependency consistency
+$pip check  
 
 
 
@@ -47,3 +57,25 @@ LAST STEP (AFTER THE CODE HAS BEEN MODIFIED REMOTELY OR RESULTS ARE BEING UPDATE
 $rsync -avz --progress --delete \
   --exclude '.git/' --exclude '__pycache__/' --exclude '.venv/' --exclude 'node_modules/' \
   nanda_mats:~/workspace/nanda_mats/  ./nanda_mats/
+
+
+
+DOWNLOAD HF MODEL
+
+STEP 1
+# put hf read token inside a .env file, from within the project directory execute
+$printf "HF_TOKEN=<your_hf_token>" > .env
+
+STEP 2
+# add it to .gitignore
+$echo ".env" >> .gitignore
+
+STEP 3
+# Load all KEY=VALUE pairs from .env into the environment
+$set -a; source .env; set +a
+
+STEP 4
+# example command to download a model from HF
+$huggingface-cli download meta-llama/Llama-3.1-8B-Instruct \
+  --include "config.json" "generation_config.json" "tokenizer.*" "model-*.safetensors" \
+  --local-dir ./models/llama-3.1-8b-instruct --local-dir-use-symlinks False
