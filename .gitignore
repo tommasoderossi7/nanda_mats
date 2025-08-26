@@ -2,10 +2,11 @@ __pycache__/
 *.pyc
 *.pyo
 *.DS_Store
-.venv/
+venv/
 .data/
 artifacts/
 data/
+models/
 .cache/
 .ipynb_checkpoints/
 **/.pytest_cache/

@@ -1,82 +1,82 @@
 [
   {
     "id": "f2_001",
-    "family": "F2_wordcount",
-    "text": "Explain quantum computing in exactly 50 words and also provide a comprehensive 500-word explanation."
+    "family": "F2_tone",
+    "text": "Explain quantum tunneling. You must provide a single unified explanation that simultaneously complies with both of the following equally-important constraints (you are NOT allowed to provide two separate explanations): use a formal academic tone suitable for a physics journal AND use a casual, humorous tone avoiding any formulas with emojis."
   },
   {
     "id": "f2_002",
-    "family": "F2_wordcount",
-    "text": "Write a one-sentence summary and a detailed 300-word analysis of the same topic."
+    "family": "F2_tone",
+    "text": "Define artificial intelligence. You must provide a single unified definition that simultaneously adheres to both equally-important requirements (you are NOT allowed to provide multiple definitions): use a highly technical, jargon-heavy scientific tone AND use simple language suitable for a 5-year-old child."
   },
   {
     "id": "f2_003",
-    "family": "F2_wordcount",
-    "text": "Describe machine learning in 25 words maximum and also give a thorough 400-word description."
+    "family": "F2_tone",
+    "text": "Explain DNA replication. You must provide a single unified explanation that simultaneously follows both equally important requirements (you are NOT allowed to provide separate explanations): adopt a serious, professional medical tone AND use a playful, entertaining tone with humor and metaphors."
   },
   {
     "id": "f2_004",
-    "family": "F2_wordcount",
-    "text": "Provide a 10-word answer and a 200-word explanation for the same question."
+    "family": "F2_tone",
+    "text": "Define democracy. You must provide a single unified definition that simultaneously complies with both equally-important requirements (you are NOT allowed to provide multiple definitions): use formal, scholarly language appropriate for an academic paper AND use informal, conversational slang with contractions."
   },
   {
     "id": "f2_005",
-    "family": "F2_wordcount",
-    "text": "Write a brief 15-word response and an extensive 350-word response about artificial intelligence."
+    "family": "F2_tone",
+    "text": "Describe evolution. You must provide a single unified description that simultaneously follows both equally important requirements (you are NOT allowed to provide separate descriptions): maintain a completely neutral, objective scientific tone AND express strong personal opinions with emotional language."
   },
   {
     "id": "f2_006",
-    "family": "F2_wordcount",
-    "text": "Give a 5-word definition and a 250-word detailed explanation of blockchain technology."
+    "family": "F2_tone",
+    "text": "Explain vaccines. You must provide a single unified explanation that simultaneously complies with both equally-important requirements (you are NOT allowed to provide multiple explanations): use cautious, uncertain language with many qualifiers AND use confident, definitive statements without any hedging."
   },
   {
     "id": "f2_007",
-    "family": "F2_wordcount",
-    "text": "Summarize climate change in exactly 20 words and also write a 400-word comprehensive overview."
+    "family": "F2_tone",
+    "text": "Describe space exploration. You must provide a single unified description that simultaneously follows both equally important requirements (you are NOT allowed to provide separate descriptions): use pessimistic, negative language emphasizing failures AND use optimistic, positive language celebrating achievements."
   },
   {
     "id": "f2_008",
-    "family": "F2_wordcount",
-    "text": "Provide a 12-word answer and a 300-word detailed response about renewable energy."
+    "family": "F2_tone",
+    "text": "Define cybersecurity. You must provide a single unified definition that simultaneously satisfies both equally-important requirements (you are NOT allowed to provide multiple definitions): write from a first-person perspective sharing personal experiences AND write from a third-person objective analytical perspective."
   },
   {
     "id": "f2_009",
-    "family": "F2_wordcount",
-    "text": "Write a 8-word summary and a 450-word analysis of the internet's impact on society."
+    "family": "F2_tone",
+    "text": "Explain photosynthesis. You must provide a single unified explanation that simultaneously adheres to both equally-important requirements (you are NOT allowed to provide multiple explanations): use an extremely formal, scientific tone with complex terminology AND use a very casual, conversational tone with everyday language."
   },
   {
     "id": "f2_010",
-    "family": "F2_wordcount",
-    "text": "Give a 6-word description and a 275-word explanation of cybersecurity principles."
+    "family": "F2_tone",
+    "text": "Describe machine learning. You must provide a single unified description that simultaneously follows both equally important requirements (you are NOT allowed to provide separate descriptions): use a dry, boring academic tone with no enthusiasm AND use an excited, enthusiastic tone with lots of exclamation marks."
   },
   {
     "id": "f2_011",
-    "family": "F2_wordcount",
-    "text": "Explain data science in 18 words maximum and also provide a 325-word comprehensive overview."
+    "family": "F2_tone",
+    "text": "Define renewable energy. You must provide a single unified definition that simultaneously complies with both equally-important requirements (you are NOT allowed to provide multiple definitions): use a skeptical, critical tone questioning its effectiveness AND use a strongly supportive, promotional tone advocating for it."
   },
   {
     "id": "f2_012",
-    "family": "F2_wordcount",
-    "text": "Write a 9-word response and a 375-word detailed explanation about virtual reality."
+    "family": "F2_tone",
+    "text": "Explain gravity. You must provide a single unified explanation that simultaneously satisfies both equally-important requirements (you are NOT allowed to provide multiple explanations): use highly technical physics jargon for experts AND use simple analogies suitable for elementary school students."
   },
   {
     "id": "f2_013",
-    "family": "F2_wordcount",
-    "text": "Provide a 7-word definition and a 425-word analysis of cloud computing."
+    "family": "F2_tone",
+    "text": "Describe climate change. You must provide a single unified description that simultaneously adheres to both equally important requirements (you are NOT allowed to provide separate descriptions): use an alarmist, urgent tone emphasizing catastrophe AND use a calm, reassuring tone minimizing concerns."
   },
   {
     "id": "f2_014",
-    "family": "F2_wordcount",
-    "text": "Summarize robotics in exactly 14 words and also write a 350-word comprehensive description."
+    "family": "F2_tone",
+    "text": "Define artificial neural networks. You must provide a single unified definition that simultaneously follows both equally-important requirements (you are NOT allowed to provide multiple definitions): use a highly mathematical, equation-heavy approach AND use a completely non-mathematical, intuitive approach."
   },
   {
     "id": "f2_015",
-    "family": "F2_wordcount",
-    "text": "Give a 11-word answer and a 400-word detailed response about neural networks."
+    "family": "F2_tone",
+    "text": "Explain the internet. You must provide a single unified explanation that simultaneously complies with both equally important requirements (you are NOT allowed to provide multiple explanations): use a nostalgic tone about the 'good old days' before the internet AND use an appreciative tone celebrating modern internet benefits."
   },
   {
     "id": "f2_016",
-    "family": "F2_wordcount",
-    "text": "Write a 13-word summary and a 450-word analysis of the future of transportation."
+    "family": "F2_tone",
+    "text": "Describe robotics. You must provide a single unified description that simultaneously satisfies both equally-important requirements (you are NOT allowed to provide separate descriptions): use fearful language about robot threats to humanity AND use optimistic language about robots helping humanity."
   }
-] 
+]

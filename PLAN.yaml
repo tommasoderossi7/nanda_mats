@@ -3,7 +3,7 @@ author: Tommaso Derossi
 goal: >
   Identify a single activation-space direction that increases Type-2 (refusal + clarifying
   question) on conflicting-instruction prompts while minimizing normal behaviour drift; test basic
-  cross-conflict type generalization (formatting ↔ word-count).
+  cross-conflict type generalization (formatting ↔ word-count ↔ tone).
 
 definitions:
   response_types:
@@ -56,8 +56,8 @@ definitions:
 
 data:
   conflicts:
-    families: [F1_formatting, F2_wordcount]
-    per_family: 16              # total 32
+    families: [F1_formatting, F2_tone, F3_wordcount]
+    per_family: 16              # total 48
     samples_per_prompt: 10
   controls:
     nonconf_minpairs: true      # one token flip per conflict prompt → non-conflict sibling
@@ -82,7 +82,7 @@ steps:
   - id: 1-prompts
     title: Author conflict & control prompts (JSON)
     actions:
-      - Write 32 conflicting prompts: 16 incompatible formatting contraints (F1), 16 incompatible word-count contraints (F2), phrasing variants.
+      - Write 48 conflicting prompts: 16 incompatible formatting contraints (F1), 16 incompatible tone contraints (F2), 16 incompatible word-count contraints (F3), phrasing variants.
       - For each conflict, create a 1-token non-conflict sibling (flip "and"→"or", or "both"→"either", etc.).
       - Create 10 benign prompts (simple formatting or short QA).
       - Validate schema: list of {id, family, text, sibling_id?}.
@@ -91,6 +91,8 @@ steps:
       - prompts/f1_nonconf_minpairs.json
       - prompts/f2_conflicts.json
       - prompts/f2_nonconf_minpairs.json
+      - prompts/f3_conflicts.json
+      - prompts/f3_nonconf_minpairs.json
       - prompts/benign.json
     acceptance:
       - Each conflict has exactly one sibling differing by 1 token; schema check passes (script prints OK).
@@ -103,7 +105,7 @@ steps:
       - Save: prompt_id, text, sample_idx, seed, output_text, first-3-token logits (or enable recompute), meta.
       - Add deterministic-eval mode (greedy) flag for later validation.
     deliverables:
-      - data/gens.jsonl (≈32 * 10 = 320 lines)
+      - data/gens.jsonl (≈48 * 10 = 480 lines)
       - data/gen_cfg.json (model + decoding configs; seed policy)
     acceptance:
       - Row count matches; print 1 example row; print REPRO CMD for a given prompt_id+sample_idx.
@@ -111,7 +113,7 @@ steps:
   - id: 3-label
     title: Label outputs into Types 1..7
     actions:
-      - Implement src/label.py with rule-based + LLM-judge rubric (local model). Output the single best label per sample.
+      - Implement src/label.py with LLM-judge rubric (local model). Output a single label per sample.
       - Manual spot-check CLI to correct ~15% of labels (random stratified).
       - Keep only prompts that yield both Type-2 and non-Type-2 among the 10 runs (within-prompt pairing).
     deliverables:
@@ -133,7 +135,7 @@ steps:
     acceptance:
       - Shapes logged (n, d_model) per key; counts match kept runs; alignment verified.
 
-  - id: 5-vector-simple
+  - id: 5-vector
     title: Build clarify-steer direction v* via candidate grid + Fisher preconditioning + simple validation objective
     actions:
       - Define post-instruction positions I from the chat template (all tokens after the instruction).

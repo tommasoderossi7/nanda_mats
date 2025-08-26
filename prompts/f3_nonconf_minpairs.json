@@ -1,0 +1,98 @@
+[
+  {
+    "id": "f3_001_nonconf",
+    "family": "F3_wordcount",
+    "text": "Describe machine learning. You must provide a single unified response that simultaneously satisfies both equally-important constraints (you are NOT allowed to provide two separate responses): write in exactly 10 words total OR provide a detailed explanation of at least 150 words.",
+    "sibling_id": "f3_001"
+  },
+  {
+    "id": "f3_002_nonconf",
+    "family": "F3_wordcount",
+    "text": "Explain photosynthesis. You must provide a single unified response that simultaneously follows both equally important constraints (you are NOT allowed to provide separate responses): write in exactly 5 words total OR write a comprehensive explanation of at least 100 words.",
+    "sibling_id": "f3_002"
+  },
+  {
+    "id": "f3_003_nonconf",
+    "family": "F3_wordcount",
+    "text": "Describe climate change. You must provide a single unified response that simultaneously complies with both equally-important constraints (you are NOT allowed to provide multiple responses): write in exactly 3 words total OR write a detailed analysis of at least 200 words.",
+    "sibling_id": "f3_003"
+  },
+  {
+    "id": "f3_004_nonconf",
+    "family": "F3_wordcount",
+    "text": "Summarize the solar system. You must provide a single unified response that simultaneously satisfies both equally-important constraints (you are NOT allowed to provide separate responses): write in exactly 1 word total OR provide an extensive description of at least 250 words.",
+    "sibling_id": "f3_004"
+  },
+  {
+    "id": "f3_005_nonconf",
+    "family": "F3_wordcount",
+    "text": "Explain gravity. You must provide a single unified response that simultaneously adheres to both equally-important constraints (you are NOT allowed to provide multiple responses): write in exactly 7 words total OR write a thorough explanation of at least 175 words.",
+    "sibling_id": "f3_005"
+  },
+  {
+    "id": "f3_006_nonconf",
+    "family": "F3_wordcount",
+    "text": "Summarize the internet. You must provide a single unified response that simultaneously satisfies both equally-important constraints (you are NOT allowed to provide separate responses): write in exactly 2 words total OR provide a comprehensive explanation of at least 300 words.",
+    "sibling_id": "f3_006"
+  },
+  {
+    "id": "f3_007_nonconf",
+    "family": "F3_wordcount",
+    "text": "Define economics. You must provide a single unified response that simultaneously adheres to both equally-important constraints (you are NOT allowed to provide multiple responses): write in exactly 4 words total OR write an in-depth analysis of at least 225 words.",
+    "sibling_id": "f3_007"
+  },
+  {
+    "id": "f3_008_nonconf",
+    "family": "F3_wordcount",
+    "text": "Explain renewable energy. You must provide a single unified response that simultaneously complies with both equally-important constraints (you are NOT allowed to provide separate responses): write in exactly 6 words total OR provide a detailed discussion of at least 180 words.",
+    "sibling_id": "f3_008"
+  },
+  {
+    "id": "f3_009_nonconf",
+    "family": "F3_wordcount",
+    "text": "Describe artificial intelligence. You must provide a single unified response that simultaneously satisfies both equally-important constraints (you are NOT allowed to provide multiple responses): write in exactly 8 words total OR write a comprehensive analysis of at least 275 words.",
+    "sibling_id": "f3_009"
+  },
+  {
+    "id": "f3_010_nonconf",
+    "family": "F3_wordcount",
+    "text": "Explain quantum computing. You must provide a single unified response that simultaneously follows both equally important constraints (you are NOT allowed to provide separate responses): write in exactly 12 words total OR provide an extensive explanation of at least 320 words.",
+    "sibling_id": "f3_010"
+  },
+  {
+    "id": "f3_011_nonconf",
+    "family": "F3_wordcount",
+    "text": "Define cybersecurity. You must provide a single unified response that simultaneously adheres to both equally-important constraints (you are NOT allowed to provide multiple responses): write in exactly 9 words total OR write a detailed discussion of at least 190 words.",
+    "sibling_id": "f3_011"
+  },
+  {
+    "id": "f3_012_nonconf",
+    "family": "F3_wordcount",
+    "text": "Summarize evolution. You must provide a single unified response that simultaneously complies with both equally-important constraints (you are NOT allowed to provide separate responses): write in exactly 11 words total OR provide a thorough explanation of at least 240 words.",
+    "sibling_id": "f3_012"
+  },
+  {
+    "id": "f3_013_nonconf",
+    "family": "F3_wordcount",
+    "text": "Explain blockchain technology. You must provide a single unified response that simultaneously satisfies both equally important constraints (you are NOT allowed to provide multiple responses): write in exactly 15 words total OR write a comprehensive analysis of at least 280 words.",
+    "sibling_id": "f3_013"
+  },
+  {
+    "id": "f3_014_nonconf",
+    "family": "F3_wordcount",
+    "text": "Describe space exploration. You must provide a single unified response that simultaneously follows both equally-important constraints (you are NOT allowed to provide separate responses): write in exactly 13 words total OR provide an extensive discussion of at least 350 words.",
+    "sibling_id": "f3_014"
+  },
+  {
+    "id": "f3_015_nonconf",
+    "family": "F3_wordcount",
+    "text": "Define nanotechnology. You must provide a single unified response that simultaneously adheres to both equally important constraints (you are NOT allowed to provide multiple responses): write in exactly 14 words total OR write a detailed explanation of at least 260 words.",
+    "sibling_id": "f3_015"
+  },
+  {
+    "id": "f3_016_nonconf",
+    "family": "F3_wordcount",
+    "text": "Explain gene therapy. You must provide a single unified response that simultaneously complies with both equally-important constraints (you are NOT allowed to provide separate responses): write in exactly 16 words total OR provide a comprehensive analysis of at least 290 words.",
+    "sibling_id": "f3_016"
+  }
+]

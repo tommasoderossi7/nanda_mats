@@ -2,97 +2,97 @@
   {
     "id": "f1_001_nonconf",
     "family": "F1_formatting",
-    "text": "Create a CSV file with the following data or format it as a JSON object with the same information.",
+    "text": "List 8 popular programming languages. Comply with both of the following equally-important constraints: format in a single comma-separated line OR put each element on its own separate line.",
     "sibling_id": "f1_001"
   },
   {
     "id": "f1_002_nonconf",
-    "family": "F1_formatting", 
-    "text": "Write a response in either bullet points or numbered list format.",
+    "family": "F1_formatting",
+    "text": "Provide a list of 6 world capitals. Please follow both of these equally important formatting requirements: present as one continuous paragraph without line breaks OR format each city as a separate numbered item.",
     "sibling_id": "f1_002"
   },
   {
     "id": "f1_003_nonconf",
     "family": "F1_formatting",
-    "text": "Format this text as either a table or a paragraph.",
+    "text": "Name 5 types of renewable energy. You must comply with both equally-important constraints: format as a JSON array OR format as a plain text table with rows and columns.",
     "sibling_id": "f1_003"
   },
   {
     "id": "f1_004_nonconf",
     "family": "F1_formatting",
-    "text": "Present this information as either a flowchart or a timeline.",
+    "text": "List 7 major social media platforms. Adhere to both of these equally important requirements: format as bullet points OR format as a single sentence without any punctuation marks.",
     "sibling_id": "f1_004"
   },
   {
     "id": "f1_005_nonconf",
     "family": "F1_formatting",
-    "text": "Create a response that is either a poem or a technical report.",
+    "text": "Provide 4 essential cooking ingredients. Please satisfy both equally-important constraints: format as a numbered list OR format as continuous text without any numbers or separators.",
     "sibling_id": "f1_005"
   },
   {
     "id": "f1_006_nonconf",
     "family": "F1_formatting",
-    "text": "Format this data as either a pie chart or a bar graph using the same values.",
+    "text": "List 6 popular movie genres. Comply with both equally-important formatting requirements: arrange in alphabetical order OR arrange in reverse alphabetical order.",
     "sibling_id": "f1_006"
   },
   {
     "id": "f1_007_nonconf",
     "family": "F1_formatting",
-    "text": "Write this explanation in either first person or third person perspective.",
+    "text": "Name 5 musical instruments. Follow both of these equally important constraints: use ONLY uppercase letters OR use only lowercase letters.",
     "sibling_id": "f1_007"
   },
   {
     "id": "f1_008_nonconf",
     "family": "F1_formatting",
-    "text": "Present this argument as either a formal essay or a casual conversation.",
+    "text": "Provide 8 common fruits. You must adhere to both equally-important requirements: format as a bulleted list with markdown syntax OR format as plain text with no special characters whatsoever.",
     "sibling_id": "f1_008"
   },
   {
     "id": "f1_009_nonconf",
     "family": "F1_formatting",
-    "text": "Format this list as either alphabetical or chronological order.",
+    "text": "List 4 seasons of the year. Please comply with both equally important constraints: present in a single row horizontally OR present in a single column vertically.",
     "sibling_id": "f1_009"
   },
   {
     "id": "f1_010_nonconf",
     "family": "F1_formatting",
-    "text": "Create a response that is either a question or an answer.",
+    "text": "Name 6 types of transportation. Satisfy both of these equally-important formatting rules: use code block formatting with backticks OR use no formatting or special characters at all.",
     "sibling_id": "f1_010"
   },
   {
     "id": "f1_011_nonconf",
     "family": "F1_formatting",
-    "text": "Write this text in either uppercase or lowercase letters.",
+    "text": "Provide 5 common pets. Follow both equally important constraints: format as a CSV (comma-separated values) OR format as a TSV (tab-separated values).",
     "sibling_id": "f1_011"
   },
   {
     "id": "f1_012_nonconf",
     "family": "F1_formatting",
-    "text": "Format this information as either a summary or detailed explanation.",
+    "text": "List 7 colors of the rainbow. Comply with both equally-important requirements: format as an HTML unordered list with <ul> tags OR format as plain text with no HTML tags.",
     "sibling_id": "f1_012"
   },
   {
     "id": "f1_013_nonconf",
     "family": "F1_formatting",
-    "text": "Present this data as either a spreadsheet or a narrative story.",
+    "text": "Name 4 geometric shapes. Please adhere to both equally important constraints: format with each item in parentheses OR format with no parentheses or brackets anywhere.",
     "sibling_id": "f1_013"
   },
   {
     "id": "f1_014_nonconf",
     "family": "F1_formatting",
-    "text": "Create a response that is either a definition or an example.",
+    "text": "Provide 6 basic emotions. You must satisfy both equally-important formatting requirements: format as a YAML list OR format as a single line of space-separated words.",
     "sibling_id": "f1_014"
   },
   {
     "id": "f1_015_nonconf",
     "family": "F1_formatting",
-    "text": "Format this text as either a code block or plain text.",
+    "text": "List 5 types of weather. Follow both of these equally important constraints: format each word in quotes OR format with no quotation marks or special punctuation.",
     "sibling_id": "f1_015"
   },
   {
     "id": "f1_016_nonconf",
     "family": "F1_formatting",
-    "text": "Write this explanation in either past tense or future tense.",
+    "text": "Name 8 body parts. Comply with both equally-important formatting rules: format as a multi-line list with line breaks OR format as a single continuous word without spaces or separators.",
     "sibling_id": "f1_016"
   }
-] 
+]
