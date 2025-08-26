@@ -62,7 +62,7 @@ LAST STEP (AFTER THE CODE HAS BEEN MODIFIED REMOTELY OR RESULTS ARE BEING UPDATE
 # Run from the local terminal within the directory that contains the local nanda_mats/ folder
 $rsync -avz --progress --delete \
   --exclude '.git/' --exclude '__pycache__/' --exclude '.venv/' --exclude 'node_modules/' --exclude '.env' \
-  nanda_mats:~/workspace/nanda_mats/  ./nanda_mats/
+  nanda_mats:/workspace/nanda_mats/  ./nanda_mats/
 
 
 
