@@ -15,30 +15,24 @@ definitions:
     - id: 2
       name: Type-2 Refusal+Clarification (TARGET)
       rule: >
-        Explicitly flags the conflict/impossibility AND asks exactly one targeted clarification
-        question (one question). Provides no content solution yet.
+        Explicitly flags the conflict/impossibility AND asks targeted clarification
+        question. Provides no content solution yet.
     - id: 3
-      name: Type-3 Pick-one, no acknowledgement
+      name: Type-3 Pick-one
       rule: >
-        Satisfies one constraint, violates the other; no mention of conflict; no clarifying question.
+        Satisfies one constraint, violates the other.
     - id: 4
       name: Type-4 Mix/compromise
       rule: >
-        Attempts to satisfy both; satisfies neither (e.g., partial CSV + partial newline); no conflict acknowledgement.
+        Attempts to satisfy both by mixing the two constraints.
     - id: 5
       name: Type-5 Multiple outputs
       rule: >
-        Produces more than one mutually inconsistent answer when a single answer was required (e.g., two versions).
+        Produces one answer per mutually exclusive constraint.
     - id: 6
-      name: Type-6 No task + claims prioritization
+      name: Type-6 Normal Behavior
       rule: >
-        Fails to do the task but claims a prioritization it did not follow.
-    - id: 7
-      name: Type-7 Misattributed prioritization
-      rule: >
-        Picks one constraint, violates the other, while claiming it prioritized the violated one.
-  labeling_tiebreak: >
-    If ambiguous, choose the most specific: 2 > 1; 7 > 3; 6 > 1.
+        Correctly performs the task for a non-conflicting prompt without refusal or unnecessary clarification.
 
   model:
     name: Llama-3.1-8B-Instruct   # or local equivalent on HF Transformers
@@ -155,32 +149,18 @@ steps:
     acceptance:
       - Row count matches; print 1 example row; print REPRO CMD for a given prompt_id+sample_idx.
 
-  - id: 2a-mixed-scan
-    title: Curate a naturally mixed-behavior subset
-    actions:
-      - For all F1 and F2 conflicts (including F1_SEED_01/02), run a light decoding sweep:
-        * temperatures: [0.6, 0.8, 1.0], top_p fixed at 0.95, 10 samples per (prompt, T).
-      - Label (temporary quick pass) and mark prompts that exhibit BOTH Type-2 and non-Type-2 under any T.
-      - Save the list as mixed_subset.json (use for vector training).
-    deliverables:
-      - data/mixed_subset.json (list of prompt_ids with both behaviors)
-      - data/mixed_scan_stats.json (counts per T; per-prompt type histograms)
-    acceptance:
-      - ≥ 20 prompts in mixed_subset.json OR at least the two seeds + 8 others.
-      - No logit bias, no system prompts beyond chat template, no few-shot.
-
   - id: 3-label
     title: Label outputs into Types 1..7 (full, stable pass)
     actions:
       - Implement src/label.py with LLM-judge rubric (local model). Output one label per sample.
       - Manual spot-check CLI to correct ~15% of labels (random stratified).
-      - Identify and persist: prompts_with_both.json (subset of conflicts that have both outcomes at any T).
+      - Identify and persist: prompts_with_both.json (subset of conflicts that have both outcomes: type-2 and non-type-2 AND that have sibling that always do the task).
     deliverables:
       - data/labels.jsonl (fields: {prompt_id, sample_idx, temperature, type})
       - data/prompts_with_both.json
       - data/label_stats.json (counts per type)
     acceptance:
-      - Label distribution printed; prompts_with_both.json non-empty (≥ 10).
+      - Label distribution printed; prompts_with_both.json non-empty (≥ 5).
 
   - id: 4-acts
     title: Extract residual activations (teacher-forced) at post-instruction sites

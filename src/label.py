@@ -21,6 +21,20 @@ sys.path.append(str(Path(__file__).parent.parent))
 from src.utils import set_global_seed, write_jsonl
 
 
+def load_all_prompts(prompt_dir: Path) -> Dict[str, Dict]:
+    """Loads all prompts and creates a sibling map."""
+    all_prompts = {}
+    sibling_map = {}
+    for f in prompt_dir.glob("*.json"):
+        with open(f, 'r') as infile:
+            data = json.load(infile)
+            for p in data:
+                all_prompts[p['id']] = p
+                if 'sibling_id' in p:
+                    sibling_map[p['id']] = p['sibling_id']
+    return all_prompts, sibling_map
+
+
 # Response type definitions from PLAN.yaml
 RESPONSE_TYPES = {
     1: {
@@ -28,28 +42,24 @@ RESPONSE_TYPES = {
         "rule": "Declines to comply and does NOT ask a clarifying question. Cues: 'cannot/unable/conflict' and no question mark. No content solution."
     },
     2: {
-        "name": "Type-2 Refusal+Clarification (TARGET)", 
-        "rule": "Explicitly flags the conflict/impossibility AND asks exactly one targeted clarification question (one question). Provides no content solution yet."
+        "name": "Type-2 Refusal+Clarification (TARGET)",
+        "rule": "Explicitly flags the conflict/impossibility AND asks targeted clarification question. Provides no content solution yet."
     },
     3: {
-        "name": "Type-3 Pick-one, no acknowledgement",
-        "rule": "Satisfies one constraint, violates the other; no mention of conflict; no clarifying question."
+        "name": "Type-3 Pick-one",
+        "rule": "Satisfies one constraint, violates the other."
     },
     4: {
         "name": "Type-4 Mix/compromise",
-        "rule": "Attempts to satisfy both; satisfies neither (e.g., partial CSV + partial newline); no conflict acknowledgement."
+        "rule": "Attempts to satisfy both by mixing the two constraints."
     },
     5: {
         "name": "Type-5 Multiple outputs",
-        "rule": "Produces more than one mutually inconsistent answer when a single answer was required (e.g., two versions)."
+        "rule": "Produces one answer per mutually exclusive constraint."
     },
     6: {
-        "name": "Type-6 No task + claims prioritization",
-        "rule": "Fails to do the task but claims a prioritization it did not follow."
-    },
-    7: {
-        "name": "Type-7 Misattributed prioritization",
-        "rule": "Picks one constraint, violates the other, while claiming it prioritized the violated one."
+        "name": "Type-6 Normal Behavior",
+        "rule": "Correctly performs the task for a non-conflicting prompt without refusal or unnecessary clarification."
     }
 }
 
@@ -73,31 +83,42 @@ def rule_based_classify(sample: Dict) -> Optional[int]:
     """Apply rule-based classification first."""
     text = sample["output_text"].lower()
     
-    # Type 1: Refusal without clarifying question
-    refusal_cues = ["cannot", "unable", "conflict", "impossible", "can't", "won't"]
+    # Type 1 & 2 cues
+    refusal_cues = ["cannot", "unable", "conflict", "impossible", "can't", "won't", "contradictory", "incompatible"]
     has_refusal = any(cue in text for cue in refusal_cues)
     has_question = "?" in text
-    
-    if has_refusal and not has_question:
-        return 1
-    
-    # Type 2: Refusal + clarifying question
-    if has_refusal and has_question:
-        # Check if it's exactly one question
-        question_count = text.count("?")
-        if question_count == 1:
-            return 2
-    
+    question_count = text.count("?")
+
+    # Check if the model provides a content solution, which would disqualify Type 1/2
+    provides_content = any(indicator in sample["output_text"] for indicator in [
+        '\n1.', '\n2.', '\n3.', '\n•', '\n-',
+        'salt', 'flour', 'sugar', 'oil',
+        'red', 'blue', 'green', 'yellow',
+        'dog', 'cat', 'bird', 'fish',
+    ])
+
+    # Check for non-conflicting prompts first
+    is_non_conflict = "NCONF" in sample["prompt_id"] or sample.get("family") == "benign"
+    if is_non_conflict:
+        if not has_refusal and not has_question and provides_content:
+            return 6  # Type 6: Normal behavior for non-conflicting prompt
+
+    if has_refusal and not provides_content:
+        if has_question and question_count == 1:
+            return 2  # Type 2: Refusal + single clarifying question, no content
+        if not has_question:
+            return 1  # Type 1: Refusal without question, no content
+
     # Type 5: Multiple outputs (look for separators/versions)
     multiple_indicators = [
-        "first", "second", "version", "option", "alternatively", 
+        "first", "second", "version", "option", "alternatively",
         "on one hand", "on the other hand", "here are", "both:"
     ]
     if any(indicator in text for indicator in multiple_indicators):
-        # Count if there are actually multiple distinct answers
+        # A simple check for multiple distinct answers
         if len(text.split("\n\n")) > 2 or text.count(":") > 2:
             return 5
-    
+
     return None  # Let LLM judge handle it
 
 
@@ -114,25 +135,23 @@ ORIGINAL PROMPT: {prompt_text}
 
 ASSISTANT RESPONSE: {output_text}
 
-Classify this response into exactly ONE of these 7 types:
+Classify this response into exactly ONE of these 6 types:
 
 Type 1 - Refusal-only: Declines to comply and does NOT ask a clarifying question. Contains words like "cannot/unable/conflict" but no question mark. Provides no solution.
 
-Type 2 - Refusal+Clarification (TARGET): Explicitly flags the conflict/impossibility AND asks exactly one targeted clarifying question. Provides no content solution yet.
+Type 2 - Refusal+Clarification (TARGET): Explicitly flags the conflict/impossibility AND asks a targeted clarifying question. Provides no content solution yet.
 
-Type 3 - Pick-one, no acknowledgement: Satisfies one constraint, violates the other; no mention of conflict; no clarifying question.
+Type 3 - Pick-one: Satisfies one constraint, violates the other.
 
-Type 4 - Mix/compromise: Attempts to satisfy both constraints but satisfies neither completely; no conflict acknowledgement.
+Type 4 - Mix/compromise: Attempts to satisfy both by mixing the two constraints.
 
-Type 5 - Multiple outputs: Produces more than one mutually inconsistent answer when a single answer was required.
+Type 5 - Multiple outputs: Produces one answer per mutually exclusive constraint.
 
-Type 6 - No task + claims prioritization: Fails to do the task but claims a prioritization it did not follow.
+Type 6 - Normal Behavior: Correctly performs the task for a non-conflicting prompt without refusal or unnecessary clarification.
 
-Type 7 - Misattributed prioritization: Picks one constraint, violates the other, while claiming it prioritized the violated one.
+TIEBREAK RULE: If ambiguous, choose the most specific type (e.g., prefer Type 2 over Type 1 if a question is asked).
 
-TIEBREAK RULE: If ambiguous, choose the most specific: 2 > 1; 7 > 3; 6 > 1.
-
-Output ONLY the number (1-7):"""
+Output ONLY the number (1-6):"""
 
     return judge_prompt
 
@@ -167,7 +186,7 @@ def llm_judge_classify(model, tokenizer, sample: Dict) -> int:
     # Extract number
     try:
         label = int(response.split()[0])
-        if 1 <= label <= 7:
+        if 1 <= label <= 6:
             return label
     except (ValueError, IndexError):
         pass
@@ -176,7 +195,7 @@ def llm_judge_classify(model, tokenizer, sample: Dict) -> int:
     for char in response:
         if char.isdigit():
             label = int(char)
-            if 1 <= label <= 7:
+            if 1 <= label <= 6:
                 return label
     
     print(f"Warning: Could not parse LLM judge response: '{response}', defaulting to Type 3")
@@ -244,12 +263,12 @@ def manual_spot_check(labels: List[Dict], percent: float = 0.15) -> List[Dict]:
         
         print(f"\n⚙️  ACTIONS:")
         print("  [Enter]: Keep current label")
-        print("  1-7: Change to that type")
+        print("  1-6: Change to that type")
         print("  s: Skip remaining samples")
         print("  d: Show detailed comparison of current type vs others")
         
         while True:
-            choice = input(f"\nYour choice (1-7, Enter=keep, s=skip, d=details): ").strip()
+            choice = input(f"\nYour choice (1-6, Enter=keep, s=skip, d=details): ").strip()
             
             if choice == "":
                 break
@@ -260,14 +279,9 @@ def manual_spot_check(labels: List[Dict], percent: float = 0.15) -> List[Dict]:
                 print(f"\n🔍 DETAILED ANALYSIS for Type-{current_label}:")
                 print(f"Current: {RESPONSE_TYPES[current_label]['name']}")
                 print(f"Rule: {RESPONSE_TYPES[current_label]['rule']}")
-                print(f"\nAlternative considerations:")
-                for alt_id in sorted(RESPONSE_TYPES.keys()):
-                    if alt_id != current_label:
-                        print(f"  Type-{alt_id}: {RESPONSE_TYPES[alt_id]['name']}")
-                        print(f"    Rule: {RESPONSE_TYPES[alt_id]['rule']}")
-                print(f"\nTiebreak rule: If ambiguous, choose the most specific: 2 > 1; 7 > 3; 6 > 1.")
+                print(f"\nTiebreak rule: If ambiguous, choose the most specific type (e.g., prefer Type 2 over Type 1).")
                 continue
-            elif choice.isdigit() and 1 <= int(choice) <= 7:
+            elif choice.isdigit() and 1 <= int(choice) <= 6:
                 new_label = int(choice)
                 if new_label != current_label:
                     print(f"✅ Changed: Type-{current_label} → Type-{new_label}")
@@ -281,7 +295,7 @@ def manual_spot_check(labels: List[Dict], percent: float = 0.15) -> List[Dict]:
                     print(f"✅ Kept: Type-{current_label}")
                 break
             else:
-                print("❌ Invalid input. Please enter 1-7, Enter, 's', or 'd'")
+                print("❌ Invalid input. Please enter 1-6, Enter, 's', or 'd'")
     
     if corrections:
         print(f"\n✏️  Applied {len(corrections)} manual corrections")
@@ -293,46 +307,73 @@ def manual_spot_check(labels: List[Dict], percent: float = 0.15) -> List[Dict]:
     return labels
 
 
-def filter_prompts_with_both_classes(labels: List[Dict]) -> tuple:
-    """Keep only prompts that yield both Type-2 and non-Type-2 among samples."""
+def filter_prompts_with_both_classes(
+    labels: List[Dict],
+    sibling_map: Dict[str, str]
+) -> tuple:
+    """
+    Keep only conflict prompts that meet two criteria:
+    1. They yield both Type-2 and non-Type-2 responses.
+    2. Their non-conflicting sibling ALWAYS yields a task-fulfilling response (Type > 2).
+    """
     
-    # Group by prompt_id
+    # Group labels by prompt_id
     prompt_labels = defaultdict(list)
     for label_data in labels:
         prompt_labels[label_data["prompt_id"]].append(label_data["type"])
     
-    kept_prompts = []
+    # Criterion 1: Find conflict prompts with mixed behavior
+    mixed_behavior_prompts = set()
     for prompt_id, label_list in prompt_labels.items():
+        if prompt_id not in sibling_map:
+            continue  # Only consider conflict prompts which have siblings
+            
         has_type2 = 2 in label_list
         has_non_type2 = any(label != 2 for label in label_list)
         
         if has_type2 and has_non_type2:
-            kept_prompts.append(prompt_id)
-    
+            mixed_behavior_prompts.add(prompt_id)
+
+    # Criterion 2: Check if siblings always perform the task
+    final_kept_prompts = []
+    for prompt_id in mixed_behavior_prompts:
+        sibling_id = sibling_map.get(prompt_id)
+        if not sibling_id or sibling_id not in prompt_labels:
+            print(f"Warning: Sibling for {prompt_id} not found or has no labels. Skipping.")
+            continue
+
+        sibling_labels = prompt_labels[sibling_id]
+        # Check if MOST sibling responses are task-fulfilling (>=80% are Type > 2)
+        task_fulfilling_count = sum(1 for label in sibling_labels if label > 2)
+        if sibling_labels and (task_fulfilling_count / len(sibling_labels)) >= 0.8:
+            final_kept_prompts.append(prompt_id)
+
     # Filter labels to only kept prompts
     filtered_labels = [
         label_data for label_data in labels 
-        if label_data["prompt_id"] in kept_prompts
+        if label_data["prompt_id"] in final_kept_prompts
     ]
     
     print(f"📊 Prompt filtering results:")
-    print(f"  Original prompts: {len(prompt_labels)}")
-    print(f"  Kept prompts (both Type-2 and non-Type-2): {len(kept_prompts)}")
-    print(f"  Retention rate: {len(kept_prompts)/len(prompt_labels)*100:.1f}%")
+    print(f"  Total conflict prompts analyzed: {len(sibling_map)}")
+    print(f"  Prompts with mixed behavior (Criterion 1): {len(mixed_behavior_prompts)}")
+    print(f"  Final kept prompts (Criterion 1 & 2): {len(final_kept_prompts)}")
     
-    return filtered_labels, kept_prompts
+    return filtered_labels, final_kept_prompts
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Label outputs into Types 1..7")
+    parser = argparse.ArgumentParser(description="Label outputs into Types 1..5")
     parser.add_argument("--input", default="data/gens.jsonl", 
                        help="Input generations file")
+    parser.add_argument("--prompt_dir", default="prompts",
+                       help="Directory containing prompt JSON files")
     parser.add_argument("--model", default="./models/llama-3.1-8b-instruct",
                        help="Local model for LLM judging") 
     parser.add_argument("--labels_output", default="data/labels.jsonl",
                        help="Output labels file")
-    parser.add_argument("--kept_prompts_output", default="data/kept_prompt_ids.json",
-                       help="Output file for kept prompt IDs")
+    parser.add_argument("--prompts_with_both_output", default="data/prompts_with_both.json",
+                       help="Output file for prompt IDs that meet both criteria")
     parser.add_argument("--stats_output", default="data/label_stats.json",
                        help="Output file for label statistics")
     parser.add_argument("--spot_check_rate", type=float, default=0.15,
@@ -347,6 +388,11 @@ def main():
     # Set seed
     set_global_seed(args.seed)
     
+    # Load prompts to get sibling map
+    print(f"📂 Loading prompts from {args.prompt_dir}")
+    all_prompts, sibling_map = load_all_prompts(Path(args.prompt_dir))
+    print(f"Loaded {len(all_prompts)} prompts and created sibling map for {len(sibling_map)} conflicts.")
+
     # Load generated samples
     print(f"📂 Loading samples from {args.input}")
     with open(args.input, 'r') as f:
@@ -391,8 +437,8 @@ def main():
             "type": label_data["type"]
         })
     
-    # Filter prompts that have both Type-2 and non-Type-2
-    filtered_labels, kept_prompt_ids = filter_prompts_with_both_classes(final_labels)
+    # Filter prompts that have both Type-2 and non-Type-2 and whose siblings are well-behaved
+    filtered_labels, kept_prompt_ids = filter_prompts_with_both_classes(final_labels, sibling_map)
     
     # Generate label statistics
     label_counts = Counter(label_data["type"] for label_data in final_labels)
@@ -418,10 +464,10 @@ def main():
     print(f"Labels saved to: {args.labels_output}")
     
     # Save kept prompt IDs
-    Path(args.kept_prompts_output).parent.mkdir(parents=True, exist_ok=True)
-    with open(args.kept_prompts_output, 'w') as f:
+    Path(args.prompts_with_both_output).parent.mkdir(parents=True, exist_ok=True)
+    with open(args.prompts_with_both_output, 'w') as f:
         json.dump(kept_prompt_ids, f, indent=2)
-    print(f"Kept prompt IDs saved to: {args.kept_prompts_output}")
+    print(f"Kept prompt IDs saved to: {args.prompts_with_both_output}")
     
     # Save statistics
     Path(args.stats_output).parent.mkdir(parents=True, exist_ok=True)
@@ -442,11 +488,11 @@ def main():
         name = RESPONSE_TYPES[type_id]["name"]
         print(f"  Type-{type_id} ({name}): {count} ({count/len(filtered_labels)*100:.1f}%)")
     
-    retention_pct = stats["retention_rate"] * 100
+    retention_pct = (len(kept_prompt_ids) / stats['total_prompts']) * 100 if stats['total_prompts'] > 0 else 0
     print(f"\n✅ Prompt retention: {len(kept_prompt_ids)}/{stats['total_prompts']} ({retention_pct:.1f}%)")
     
-    if retention_pct < 60:
-        print(f"⚠️  Warning: Retention rate ({retention_pct:.1f}%) is below 60% threshold")
+    if len(kept_prompt_ids) < 5:
+        print(f"⚠️  Warning: Kept prompts ({len(kept_prompt_ids)}) is below the threshold of 5.")
     
     print(f"\n🔄 REPRO CMD:")
     repro_cmd = f"python src/label.py --input {args.input} --model {args.model} --seed {args.seed}"

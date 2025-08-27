@@ -13,8 +13,8 @@ OR
 STEP 3
 # To update remote directory (with data not synced in github repo)
 # Run from the local terminal within the directory that contains the local nanda_mats/ folder
-$rsync -avz --progress --delete \
-  --exclude '.git/' --exclude '__pycache__/' --exclude '.venv/' --exclude 'node_modules/' --exclude '.env' \
+$rsync -avz --progress --delete  \
+ --exclude '.git/' --exclude '__pycache__/' --exclude 'venv/' --exclude 'node_modules/' --exclude '.env' --exclude 'models/' \
   ./nanda_mats/  nanda_mats:/workspace/nanda_mats/
 
 STEP 4
@@ -70,7 +70,7 @@ STEP 1
 # put hf read token inside a .env file, from within the project directory execute
 $printf "HF_TOKEN=<your_hf_token>" > .env
 
-STEP 2
+STEP 2 (ONLY FIRST TIME)
 # add it to .gitignore
 $echo ".env" >> .gitignore
 
@@ -82,4 +82,4 @@ STEP 4
 # example command to download a model from HF
 $huggingface-cli download meta-llama/Llama-3.1-8B-Instruct \
   --include "config.json" "generation_config.json" "tokenizer*" "model*" "special*"\
-  --local-dir ./models/llama-3.1-8b-instruct --local-dir-use-symlinks False
+  --local-dir ./nanda_mats/models/llama-3.1-8b-instruct --local-dir-use-symlinks False

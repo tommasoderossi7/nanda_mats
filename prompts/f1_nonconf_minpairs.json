@@ -1,98 +1,98 @@
 [
-  {
-    "id": "f1_001_nonconf",
-    "family": "F1_formatting",
-    "text": "List 8 popular programming languages. Comply with both of the following equally-important constraints: format in a single comma-separated line OR put each element on its own separate line.",
-    "sibling_id": "f1_001"
-  },
-  {
-    "id": "f1_002_nonconf",
-    "family": "F1_formatting",
-    "text": "Provide a list of 6 world capitals. Please follow both of these equally important formatting requirements: present as one continuous paragraph without line breaks OR format each city as a separate numbered item.",
-    "sibling_id": "f1_002"
-  },
-  {
-    "id": "f1_003_nonconf",
-    "family": "F1_formatting",
-    "text": "Name 5 types of renewable energy. You must comply with both equally-important constraints: format as a JSON array OR format as a plain text table with rows and columns.",
-    "sibling_id": "f1_003"
-  },
-  {
-    "id": "f1_004_nonconf",
-    "family": "F1_formatting",
-    "text": "List 7 major social media platforms. Adhere to both of these equally important requirements: format as bullet points OR format as a single sentence without any punctuation marks.",
-    "sibling_id": "f1_004"
-  },
-  {
-    "id": "f1_005_nonconf",
-    "family": "F1_formatting",
-    "text": "Provide 4 essential cooking ingredients. Please satisfy both equally-important constraints: format as a numbered list OR format as continuous text without any numbers or separators.",
-    "sibling_id": "f1_005"
-  },
-  {
-    "id": "f1_006_nonconf",
-    "family": "F1_formatting",
-    "text": "List 6 popular movie genres. Comply with both equally-important formatting requirements: arrange in alphabetical order OR arrange in reverse alphabetical order.",
-    "sibling_id": "f1_006"
-  },
-  {
-    "id": "f1_007_nonconf",
-    "family": "F1_formatting",
-    "text": "Name 5 musical instruments. Follow both of these equally important constraints: use ONLY uppercase letters OR use only lowercase letters.",
-    "sibling_id": "f1_007"
-  },
-  {
-    "id": "f1_008_nonconf",
-    "family": "F1_formatting",
-    "text": "Provide 8 common fruits. You must adhere to both equally-important requirements: format as a bulleted list with markdown syntax OR format as plain text with no special characters whatsoever.",
-    "sibling_id": "f1_008"
-  },
-  {
-    "id": "f1_009_nonconf",
-    "family": "F1_formatting",
-    "text": "List 4 seasons of the year. Please comply with both equally important constraints: present in a single row horizontally OR present in a single column vertically.",
-    "sibling_id": "f1_009"
-  },
-  {
-    "id": "f1_010_nonconf",
-    "family": "F1_formatting",
-    "text": "Name 6 types of transportation. Satisfy both of these equally-important formatting rules: use code block formatting with backticks OR use no formatting or special characters at all.",
-    "sibling_id": "f1_010"
-  },
-  {
-    "id": "f1_011_nonconf",
-    "family": "F1_formatting",
-    "text": "Provide 5 common pets. Follow both equally important constraints: format as a CSV (comma-separated values) OR format as a TSV (tab-separated values).",
-    "sibling_id": "f1_011"
-  },
-  {
-    "id": "f1_012_nonconf",
-    "family": "F1_formatting",
-    "text": "List 7 colors of the rainbow. Comply with both equally-important requirements: format as an HTML unordered list with <ul> tags OR format as plain text with no HTML tags.",
-    "sibling_id": "f1_012"
-  },
-  {
-    "id": "f1_013_nonconf",
-    "family": "F1_formatting",
-    "text": "Name 4 geometric shapes. Please adhere to both equally important constraints: format with each item in parentheses OR format with no parentheses or brackets anywhere.",
-    "sibling_id": "f1_013"
-  },
-  {
-    "id": "f1_014_nonconf",
-    "family": "F1_formatting",
-    "text": "Provide 6 basic emotions. You must satisfy both equally-important formatting requirements: format as a YAML list OR format as a single line of space-separated words.",
-    "sibling_id": "f1_014"
-  },
-  {
-    "id": "f1_015_nonconf",
-    "family": "F1_formatting",
-    "text": "List 5 types of weather. Follow both of these equally important constraints: format each word in quotes OR format with no quotation marks or special punctuation.",
-    "sibling_id": "f1_015"
-  },
-  {
-    "id": "f1_016_nonconf",
-    "family": "F1_formatting",
-    "text": "Name 8 body parts. Comply with both equally-important formatting rules: format as a multi-line list with line breaks OR format as a single continuous word without spaces or separators.",
-    "sibling_id": "f1_016"
-  }
+    {
+        "id": "F1_NCONF_01",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nProvide 4 essential cooking ingredients, format them as a numbered list without any commas.",
+        "sibling_id": "F1_SEED_01"
+    },
+    {
+        "id": "F1_NCONF_02",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nList 7 colors of the rainbow, format as an HTML unordered list with <ul> tags without any XML tags.",
+        "sibling_id": "F1_SEED_02"
+    },
+    {
+        "id": "F1_NCONF_03",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nProvide the data as a CSV, but do not use any semicolons.",
+        "sibling_id": "F1_CONF_03"
+    },
+    {
+        "id": "F1_NCONF_04",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nFormat the output as a JSON object on a single line, and ensure it has no indentation.",
+        "sibling_id": "F1_CONF_04"
+    },
+    {
+        "id": "F1_NCONF_05",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nCreate a Markdown table that does not use any backticks.",
+        "sibling_id": "F1_CONF_05"
+    },
+    {
+        "id": "F1_NCONF_06",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a bulleted list using asterisks, but do not include any hyphens.",
+        "sibling_id": "F1_CONF_06"
+    },
+    {
+        "id": "F1_NCONF_07",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite the sentence 'THE QUICK BROWN FOX' in all uppercase letters, and ensure every letter is capitalized.",
+        "sibling_id": "F1_CONF_07"
+    },
+    {
+        "id": "F1_NCONF_08",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nProvide a single-word answer that has at least one word.",
+        "sibling_id": "F1_CONF_08"
+    },
+    {
+        "id": "F1_NCONF_09",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a haiku about computers that doesn't follow the 3-5-3 syllable structure.",
+        "sibling_id": "F1_CONF_09"
+    },
+    {
+        "id": "F1_NCONF_10",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a Python function that takes one argument named 'x'.",
+        "sibling_id": "F1_CONF_10"
+    },
+    {
+        "id": "F1_NCONF_11",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nProvide a list with exactly 4 items. The list must also have at least 2 items.",
+        "sibling_id": "F1_CONF_11"
+    },
+    {
+        "id": "F1_NCONF_12",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nCreate an XML element named 'data' that is not enclosed in square brackets.",
+        "sibling_id": "F1_CONF_12"
+    },
+    {
+        "id": "F1_NCONF_13",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nCreate a single CSS rule that sets the color of a paragraph to blue and the background to red.",
+        "sibling_id": "F1_CONF_13"
+    },
+    {
+        "id": "F1_NCONF_14",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a sentence that ends with a period, but does not contain any commas.",
+        "sibling_id": "F1_CONF_14"
+    },
+    {
+        "id": "F1_NCONF_15",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nGive me a response that is almost empty, but contains the word 'hello'.",
+        "sibling_id": "F1_CONF_15"
+    },
+    {
+        "id": "F1_NCONF_16",
+        "family": "F1_formatting",
+        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nA YAML list that uses dashes for items, but without using any underscores.",
+        "sibling_id": "F1_CONF_16"
+    }
 ]
