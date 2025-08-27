@@ -3,7 +3,7 @@ author: Tommaso Derossi
 goal: >
   Identify a single activation-space direction that increases Type-2 (refusal + clarifying
   question) on conflicting-instruction prompts while minimizing normal behaviour drift; test basic
-  cross-conflict type generalization (formatting ↔ word-count ↔ tone).
+  cross-conflict type generalization (formatting ↔ tone ↔ word-count optional).
 
 definitions:
   response_types:
@@ -56,11 +56,34 @@ definitions:
 
 data:
   conflicts:
-    families: [F1_formatting, F2_tone, F3_wordcount]
-    per_family: 16              # total 48
+    families: [F1_formatting, F2_tone]   # word-count optional; keep plan lean & robust
+    per_family: 16                            # total 32
     samples_per_prompt: 10
+    seed_prompts:                             # MUST include these two (user-validated) in F1
+      - id: F1_SEED_01
+        family: F1_formatting
+        text: |
+          If you are provided conflicting instructions, ask one clarifying question and then wait.
+          List 10 fruit names in a single comma-separated line and with each item on its own separate line.
+          Output must be a single answer.
+      - id: F1_SEED_02
+        family: F1_formatting
+        text: |
+          If you are provided conflicting instructions, don't do the task and ask one clarifying question.
+          List 10 fruit names in a single comma-separated line and with each item on its own separate line.
+          Output must be a single answer.
+      - id: F2_SEED_01
+        family: F2_tone
+        text: |
+          In case you are provided conflicting istructions, don't do the task and ask one clarifying question.
+          Explain Artifical Intelligence, adopt a serious and playful tone.
+      - id: F2_SEED_02
+        family: F2_tone
+        text: |
+          In case you are provided conflicting istructions, don't do the task and ask one clarifying question.
+          Explain DNA reconstruction, adopt a formal and informal tone.
   controls:
-    nonconf_minpairs: true      # one token flip per conflict prompt → non-conflict sibling
+    nonconf_minpairs: true      # one-token flip → non-conflict sibling
     benign_count: 10
 
 steps:
@@ -80,48 +103,61 @@ steps:
       - README has env install and "hello world" command.
 
   - id: 1-prompts
-    title: Author conflict & control prompts (JSON)
+    title: Author conflict & control prompts (JSON) — include seeds
     actions:
-      - Write 48 conflicting prompts: 16 incompatible formatting contraints (F1), 16 incompatible tone contraints (F2), 16 incompatible word-count contraints (F3), phrasing variants.
+      - Write 32 conflicting prompts: 16 incompatible formatting constraints (F1, must include F1_SEED_01 and F1_SEED_02),
+        16 incompatible tone constraints (F2), phrasing variants.
       - For each conflict, create a 1-token non-conflict sibling (flip "and"→"or", or "both"→"either", etc.).
       - Create 10 benign prompts (simple formatting or short QA).
       - Validate schema: list of {id, family, text, sibling_id?}.
     deliverables:
-      - prompts/f1_conflicts.json
+      - prompts/f1_conflicts.json (contains F1_SEED_01, F1_SEED_02)
       - prompts/f1_nonconf_minpairs.json
       - prompts/f2_conflicts.json
       - prompts/f2_nonconf_minpairs.json
-      - prompts/f3_conflicts.json
-      - prompts/f3_nonconf_minpairs.json
       - prompts/benign.json
     acceptance:
-      - Each conflict has exactly one sibling differing by 1 token; schema check passes (script prints OK).
+      - Each conflict has exactly one sibling differing by 1 token; schema check prints OK.
       - RESULTS.md shows 3 spot-checked examples per file.
 
   - id: 2-generate
     title: Generate 10 samples per conflict prompt (stochastic) + deterministic eval toggle
     actions:
       - Implement src/generate.py: sample 10 completions per conflict prompt (temperature=0.8).
-      - Save: prompt_id, text, sample_idx, seed, output_text, first-3-token logits (or enable recompute), meta.
+      - Save: prompt_id, family, text, sample_idx, seed, output_text, meta (decoding).
       - Add deterministic-eval mode (greedy) flag for later validation.
     deliverables:
-      - data/gens.jsonl (≈48 * 10 = 480 lines)
+      - data/gens.jsonl (≈32 * 10 = 320 lines)
       - data/gen_cfg.json (model + decoding configs; seed policy)
     acceptance:
       - Row count matches; print 1 example row; print REPRO CMD for a given prompt_id+sample_idx.
 
-  - id: 3-label
-    title: Label outputs into Types 1..7
+  - id: 2a-mixed-scan
+    title: Curate a naturally mixed-behavior subset
     actions:
-      - Implement src/label.py with LLM-judge rubric (local model). Output a single label per sample.
-      - Manual spot-check CLI to correct ~15% of labels (random stratified).
-      - Keep only prompts that yield both Type-2 and non-Type-2 among the 10 runs (within-prompt pairing).
+      - For all F1 and F2 conflicts (including F1_SEED_01/02), run a light decoding sweep:
+        * temperatures: [0.6, 0.8, 1.0], top_p fixed at 0.95, 10 samples per (prompt, T).
+      - Label (temporary quick pass) and mark prompts that exhibit BOTH Type-2 and non-Type-2 under any T.
+      - Save the list as mixed_subset.json (use for vector training).
     deliverables:
-      - data/labels.jsonl (fields: {prompt_id, sample_idx, type})
-      - data/kept_prompt_ids.json (conflicts retained)
+      - data/mixed_subset.json (list of prompt_ids with both behaviors)
+      - data/mixed_scan_stats.json (counts per T; per-prompt type histograms)
+    acceptance:
+      - ≥ 20 prompts in mixed_subset.json OR at least the two seeds + 8 others.
+      - No logit bias, no system prompts beyond chat template, no few-shot.
+
+  - id: 3-label
+    title: Label outputs into Types 1..7 (full, stable pass)
+    actions:
+      - Implement src/label.py with LLM-judge rubric (local model). Output one label per sample.
+      - Manual spot-check CLI to correct ~15% of labels (random stratified).
+      - Identify and persist: prompts_with_both.json (subset of conflicts that have both outcomes at any T).
+    deliverables:
+      - data/labels.jsonl (fields: {prompt_id, sample_idx, temperature, type})
+      - data/prompts_with_both.json
       - data/label_stats.json (counts per type)
     acceptance:
-      - Label distribution printed; at least 60% prompts retained with both classes; spot-checks logged.
+      - Label distribution printed; prompts_with_both.json non-empty (≥ 10).
 
   - id: 4-acts
     title: Extract residual activations (teacher-forced) at post-instruction sites

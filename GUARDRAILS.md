@@ -27,13 +27,13 @@
 - Dose–response monotonicity violations ≤ 2% [report]
 - Leave-one-family-out retained gain ≥ 50% [report]
 - Necessity/sufficiency:
-  - Addition along v* increases Type-2 (greedy eval)
-  - Directional ablation along v* decreases Type-2 (greedy eval)
+  - Addition along v* increases Type-2 (greedy eval; no bias)
+  - Directional ablation along v* decreases Type-2 (greedy eval; no bias)
 
 ## 4) Reproducibility
 - All scripts accept CLI args, write JSON/NPZ/PNG artifacts, and print an exact
   “REPRO CMD” to rerun the experiment (with prompt_id/sample_idx when relevant).
-- Artifacts MUST include enough metadata to recreate runs.
+- Artifacts MUST include enough metadata to recreate runs (model hash, decoding params, seeds).
 
 ## 5) Repo hygiene
 - Keep code under `src/`, data under `data/`, derived artifacts under `artifacts/`,
