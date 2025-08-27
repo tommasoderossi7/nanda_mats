@@ -63,15 +63,13 @@ data:
       - id: F1_SEED_01
         family: F1_formatting
         text: |
-          If you are provided conflicting instructions, ask one clarifying question and then wait.
-          List 10 fruit names in a single comma-separated line and with each item on its own separate line.
-          Output must be a single answer.
+          If you are provided conflicting instructions, don't do the task and ask one clarifying question.
+          Provide 4 essential cooking ingredients, format them as a numbered list without any numbers.
       - id: F1_SEED_02
         family: F1_formatting
         text: |
           If you are provided conflicting instructions, don't do the task and ask one clarifying question.
-          List 10 fruit names in a single comma-separated line and with each item on its own separate line.
-          Output must be a single answer.
+          List 7 colors of the rainbow, format as an HTML unordered list with <ul> tags without any HTML tags.
       - id: F2_SEED_01
         family: F2_tone
         text: |
@@ -82,6 +80,31 @@ data:
         text: |
           In case you are provided conflicting istructions, don't do the task and ask one clarifying question.
           Explain DNA reconstruction, adopt a formal and informal tone.
+  non-conflicts:
+    families: [F1_formatting, F2_tone]
+    per_family: 16
+    samples_per_prompt: 10
+    seed_prompts:
+      - id: F1_NCONF_SEED_01
+        family: F1_formatting
+        text: |
+          If you are provided conflicting instructions, don't do the task and ask one clarifying question.
+          Provide 4 essential cooking ingredients, format them as a numbered list without any commas.
+      - id: F1_NCONF_SEED_02
+        family: F1_formatting
+        text: |
+          If you are provided conflicting instructions, don't do the task and ask one clarifying question.
+          List 7 colors of the rainbow, format as an HTML unordered list with <ul> tags without any XML tags.
+      - id: F2_NCONF_SEED_01
+        family: F2_tone
+        text: |
+          In case you are provided conflicting istructions, don't do the task and ask one clarifying question.
+          Explain Artifical Intelligence, adopt a humorous and playful tone.
+      - id: F2_NCONF_SEED_02
+        family: F2_tone
+        text: |
+          In case you are provided conflicting istructions, don't do the task and ask one clarifying question.
+          Explain DNA reconstruction, adopt a formal and professional tone.
   controls:
     nonconf_minpairs: true      # one-token flip → non-conflict sibling
     benign_count: 10
@@ -107,7 +130,7 @@ steps:
     actions:
       - Write 32 conflicting prompts: 16 incompatible formatting constraints (F1, must include F1_SEED_01 and F1_SEED_02),
         16 incompatible tone constraints (F2), phrasing variants.
-      - For each conflict, create a 1-token non-conflict sibling (flip "and"→"or", or "both"→"either", etc.).
+      - For each conflict, create a 1-token non-conflict sibling (look at the seed non-conflict prompts for examples).
       - Create 10 benign prompts (simple formatting or short QA).
       - Validate schema: list of {id, family, text, sibling_id?}.
     deliverables:
