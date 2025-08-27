@@ -81,5 +81,5 @@ $set -a; source .env; set +a
 STEP 4
 # example command to download a model from HF
 $huggingface-cli download meta-llama/Llama-3.1-8B-Instruct \
-  --include "config.json" "generation_config.json" "tokenizer.*" "model-*.safetensors" \
+  --include "config.json" "generation_config.json" "tokenizer*" "model*" "special*"\
   --local-dir ./models/llama-3.1-8b-instruct --local-dir-use-symlinks False
