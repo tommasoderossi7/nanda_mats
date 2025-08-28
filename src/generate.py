@@ -145,12 +145,12 @@ def load_conflict_prompts(conflict_families: Optional[List[str]] = None,
     # Load all prompt files
     prompt_files = {
         "f1": ["f1_conflicts.json", "f1_nonconf_minpairs.json"],
-        "f2": ["f2_conflicts.json", "f2_nonconf_minpairs.json"], 
-        "f3": ["f3_conflicts.json", "f3_nonconf_minpairs.json"]
+        "f2": ["f2_conflicts.json", "f2_nonconf_minpairs.json"],
+        "benign": ["benign.json"]
     }
     
     # Determine which families to load
-    families_to_load = conflict_families if conflict_families else ["f1", "f2", "f3"]
+    families_to_load = conflict_families if conflict_families else ["f1", "f2", "benign"]
     
     # Load prompts from specified families
     for family in families_to_load:
@@ -200,9 +200,11 @@ def main():
     parser.add_argument("--repro_prompt_id", help="Prompt ID for REPRO CMD")
     parser.add_argument("--repro_sample_idx", type=int, help="Sample index for REPRO CMD")
     parser.add_argument("--conflict_family", 
-                       help="Comma-separated list of conflict families to run (e.g., f1,f3)")
+                       help="Comma-separated list of conflict families to run (e.g., f1,f2)")
     parser.add_argument("--prompts_to_run", 
-                       help="Comma-separated list of specific prompt IDs to run (e.g., f1_002_nonconf,f3_001)")
+                       help="Comma-separated list of specific prompt IDs to run (e.g., f1_002_nonconf,f2_001)")
+    parser.add_argument("--prompt_string", type=str, 
+                       help="A custom prompt string to generate samples for")
     
     args = parser.parse_args()
     
@@ -239,11 +241,12 @@ def main():
     # Generate samples
     all_samples = []
     all_logits = []
-    for prompt in conflict_prompts:
-        print(f"Generating samples for {prompt['id']}: {prompt['text'][:50]}...")
-        
+    
+    if args.prompt_string:
+        print(f"Generating samples for custom prompt: {args.prompt_string[:50]}...")
+        prompt_id = "custom_prompt"
         samples, logits_data = generate_samples(
-            model, tokenizer, prompt["text"],
+            model, tokenizer, args.prompt_string,
             num_samples=args.samples_per_prompt,
             temperature=args.temperature,
             top_p=args.top_p,
@@ -251,27 +254,52 @@ def main():
             base_seed=args.base_seed,
             save_logits=save_logits
         )
-        
-        # Set prompt_id for both samples and logits
         for sample in samples:
-            sample["prompt_id"] = prompt["id"]
+            sample["prompt_id"] = prompt_id
         for logits_entry in logits_data:
-            logits_entry["prompt_id"] = prompt["id"]
-        
+            logits_entry["prompt_id"] = prompt_id
         all_samples.extend(samples)
         all_logits.extend(logits_data)
+        output_filename = "exp_gens.jsonl"
+        logits_filename = "exp_logits.jsonl"
+        config_filename = "exp_gen_cfg.json"
+    else:
+        for prompt in conflict_prompts:
+            print(f"Generating samples for {prompt['id']}: {prompt['text'][:50]}...")
+            
+            samples, logits_data = generate_samples(
+                model, tokenizer, prompt["text"],
+                num_samples=args.samples_per_prompt,
+                temperature=args.temperature,
+                top_p=args.top_p,
+                max_new_tokens=args.max_new_tokens,
+                base_seed=args.base_seed,
+                save_logits=save_logits
+            )
+            
+            # Set prompt_id for both samples and logits
+            for sample in samples:
+                sample["prompt_id"] = prompt["id"]
+            for logits_entry in logits_data:
+                logits_entry["prompt_id"] = prompt["id"]
+            
+            all_samples.extend(samples)
+            all_logits.extend(logits_data)
+        output_filename = "gens.jsonl"
+        logits_filename = "logits.jsonl"
+        config_filename = "gen_cfg.json"
     
     # Save samples
-    output_path = Path(args.output)
+    output_path = Path(f"data/{output_filename}")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     write_jsonl(output_path, all_samples)
     
     # Save logits if any were collected
     if all_logits:
-        logits_path = Path(args.logits_output)
+        logits_path = Path(f"data/{logits_filename}")
         logits_path.parent.mkdir(parents=True, exist_ok=True)
         write_jsonl(logits_path, all_logits)
-        print(f"Saved {len(all_logits)} logits entries to: {args.logits_output}")
+        print(f"Saved {len(all_logits)} logits entries to: {logits_path}")
     
     # Save configuration
     config = {
@@ -289,7 +317,7 @@ def main():
         "generation": {
             "samples_per_prompt": args.samples_per_prompt,
             "base_seed": args.base_seed,
-            "total_prompts": len(conflict_prompts),
+            "total_prompts": len(conflict_prompts) if not args.prompt_string else 1,
             "total_samples": len(all_samples),
             "save_logits": save_logits,
             "total_logits": len(all_logits)
@@ -297,14 +325,14 @@ def main():
         "seed_policy": "base_seed + sample_idx for reproducibility"
     }
     
-    config_path = Path(args.config_output)
+    config_path = Path(f"data/{config_filename}")
     config_path.parent.mkdir(parents=True, exist_ok=True)
     with config_path.open("w") as f:
         json.dump(config, f, indent=2)
     
     # Print summary
     print(f"\n📊 Generation Summary:")
-    print(f"  Total prompts: {len(conflict_prompts)}")
+    print(f"  Total prompts: {len(conflict_prompts) if not args.prompt_string else 1}")
     print(f"  Samples per prompt: {args.samples_per_prompt}")
     print(f"  Total samples: {len(all_samples)}")
     print(f"  Output: {output_path}")

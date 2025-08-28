@@ -2,97 +2,97 @@
     {
         "id": "F1_SEED_01",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nProvide 4 essential cooking ingredients, format them as a numbered list without any numbers.",
+        "text": "Provide 4 essential cooking ingredients, format them as a numbered list without any numbers.",
         "sibling_id": "F1_NCONF_01"
     },
     {
         "id": "F1_SEED_02",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nList 7 colors of the rainbow, format as an HTML unordered list with <ul> tags without any HTML tags.",
+        "text": "List 7 colors of the rainbow, format as an HTML unordered list with <ul> tags without any HTML tags.",
         "sibling_id": "F1_NCONF_02"
     },
     {
         "id": "F1_CONF_03",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nProvide the data as a CSV, but do not use any commas.",
+        "text": "Provide the data as a CSV, but do not use any commas.",
         "sibling_id": "F1_NCONF_03"
     },
     {
         "id": "F1_CONF_04",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nFormat the output as a JSON object on a single line, but ensure it is well-indented.",
+        "text": "Format the output as a JSON object on a single line, but ensure it is well-indented.",
         "sibling_id": "F1_NCONF_04"
     },
     {
         "id": "F1_CONF_05",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nCreate a Markdown table that does not use any pipe characters.",
+        "text": "Create a Markdown table that does not use any pipe characters.",
         "sibling_id": "F1_NCONF_05"
     },
     {
         "id": "F1_CONF_06",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a bulleted list using asterisks, but do not include any asterisks.",
+        "text": "Write a bulleted list using asterisks, but do not include any asterisks.",
         "sibling_id": "F1_NCONF_06"
     },
     {
         "id": "F1_CONF_07",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite the sentence 'THE QUICK BROWN FOX' in all uppercase letters, but ensure every letter is in lowercase.",
+        "text": "Write the sentence 'THE QUICK BROWN FOX' in all uppercase letters, but ensure every letter is in lowercase.",
         "sibling_id": "F1_NCONF_07"
     },
     {
         "id": "F1_CONF_08",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nProvide a single-word answer that has at least three words.",
+        "text": "Provide a single-word answer that has at least three words.",
         "sibling_id": "F1_NCONF_08"
     },
     {
         "id": "F1_CONF_09",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a haiku about computers that doesn't follow the 5-7-5 syllable structure.",
+        "text": "Write a haiku about computers that doesn't follow the 5-7-5 syllable structure.",
         "sibling_id": "F1_NCONF_09"
     },
     {
         "id": "F1_CONF_10",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a Python function that takes no arguments but requires a parameter named 'x'.",
+        "text": "Write a Python function that takes no arguments but requires a parameter named 'x'.",
         "sibling_id": "F1_NCONF_10"
     },
     {
         "id": "F1_CONF_11",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nProvide a list with exactly 4 items. The list must also have exactly 6 items.",
+        "text": "Provide a list with exactly 4 items. The list must also have exactly 6 items.",
         "sibling_id": "F1_NCONF_11"
     },
     {
         "id": "F1_CONF_12",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nCreate an XML element named 'data' that is not enclosed in angle brackets.",
+        "text": "Create an XML element named 'data' that is not enclosed in angle brackets.",
         "sibling_id": "F1_NCONF_12"
     },
     {
         "id": "F1_CONF_13",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nCreate a single CSS rule that sets the color of a paragraph to both blue and red simultaneously.",
+        "text": "Create a single CSS rule that sets the color of a paragraph to both blue and red simultaneously.",
         "sibling_id": "F1_NCONF_13"
     },
     {
         "id": "F1_CONF_14",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a sentence that ends with a period, but does not contain any punctuation.",
+        "text": "Write a sentence that ends with a period, but does not contain any punctuation.",
         "sibling_id": "F1_NCONF_14"
     },
     {
         "id": "F1_CONF_15",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nGive me a response that is completely empty, but contains the word 'hello'.",
+        "text": "Give me a response that is completely empty, but contains the word 'hello'.",
         "sibling_id": "F1_NCONF_15"
     },
     {
         "id": "F1_CONF_16",
         "family": "F1_formatting",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nA YAML list that uses dashes for items, but without using any dashes.",
+        "text": "Create a YAML list that uses dashes for items, but without using any dashes.",
         "sibling_id": "F1_NCONF_16"
     }
 ]

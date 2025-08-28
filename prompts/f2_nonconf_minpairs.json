@@ -2,97 +2,97 @@
     {
         "id": "F2_NCONF_01",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nExplain Artifical Intelligence, adopt a humorous and playful tone.",
+        "text": "Explain Artifical Intelligence, adopt a humorous and playful tone.",
         "sibling_id": "F2_SEED_01"
     },
     {
         "id": "F2_NCONF_02",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nExplain DNA reconstruction, adopt a formal and professional tone.",
+        "text": "Explain DNA reconstruction, adopt a formal and professional tone.",
         "sibling_id": "F2_SEED_02"
     },
     {
         "id": "F2_NCONF_03",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nDescribe a sunset in a very dramatic and uplifting way.",
+        "text": "Describe a sunset in a very dramatic and uplifting way.",
         "sibling_id": "F2_CONF_03"
     },
     {
         "id": "F2_NCONF_04",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a product review that is both extremely enthusiastic and somewhat detailed.",
+        "text": "Write a product review that is both extremely enthusiastic and somewhat detailed.",
         "sibling_id": "F2_CONF_04"
     },
     {
         "id": "F2_NCONF_05",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nExplain quantum physics in a way that is both simple and respectful.",
+        "text": "Explain quantum physics in a way that is both simple and respectful.",
         "sibling_id": "F2_CONF_05"
     },
     {
         "id": "F2_NCONF_06",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a children's story that is both exciting and reassuring.",
+        "text": "Write a children's story that is both exciting and reassuring.",
         "sibling_id": "F2_CONF_06"
     },
     {
         "id": "F2_NCONF_07",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nCompose a tweet that is both professional and informative.",
+        "text": "Compose a tweet that is both professional and informative.",
         "sibling_id": "F2_CONF_07"
     },
     {
         "id": "F2_NCONF_08",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a short biography of a famous person that is both deeply admiring and thoroughly factual.",
+        "text": "Write a short biography of a famous person that is both deeply admiring and thoroughly factual.",
         "sibling_id": "F2_CONF_08"
     },
     {
         "id": "F2_NCONF_09",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nGive advice on public speaking that is both encouraging and cautionary.",
+        "text": "Give advice on public speaking that is both encouraging and cautionary.",
         "sibling_id": "F2_CONF_09"
     },
     {
         "id": "F2_NCONF_10",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a movie scene that is both hilarious and dramatic.",
+        "text": "Write a movie scene that is both hilarious and dramatic.",
         "sibling_id": "F2_CONF_10"
     },
     {
         "id": "F2_NCONF_11",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nDescribe a delicious meal in a way that is both appetizing and unusual.",
+        "text": "Describe a delicious meal in a way that is both appetizing and unusual.",
         "sibling_id": "F2_CONF_11"
     },
     {
         "id": "F2_NCONF_12",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a letter of complaint that is both firm and professional.",
+        "text": "Write a letter of complaint that is both firm and professional.",
         "sibling_id": "F2_CONF_12"
     },
     {
         "id": "F2_NCONF_13",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nTell a joke that is both clever and family-friendly.",
+        "text": "Tell a joke that is both clever and family-friendly.",
         "sibling_id": "F2_CONF_13"
     },
     {
         "id": "F2_NCONF_14",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a news report that is both objective and thoroughly researched.",
+        "text": "Write a news report that is both objective and thoroughly researched.",
         "sibling_id": "F2_CONF_14"
     },
     {
         "id": "F2_NCONF_15",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nCreate a character description that is both heroic and noble.",
+        "text": "Create a character description that is both heroic and noble.",
         "sibling_id": "F2_CONF_15"
     },
     {
         "id": "F2_NCONF_16",
         "family": "F2_tone",
-        "text": "In case you are provided conflicting instructions, don't do the task and ask one clarifying question.\nWrite a poem about love that is both romantic and realistic.",
+        "text": "Write a poem about love that is both romantic and realistic.",
         "sibling_id": "F2_CONF_16"
     }
 ]

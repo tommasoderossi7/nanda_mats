@@ -13,8 +13,8 @@ OR
 STEP 3
 # To update remote directory (with data not synced in github repo)
 # Run from the local terminal within the directory that contains the local nanda_mats/ folder
-$$rsync -avz --progress --delete  \
---include 'data/'  --exclude='*'  \
+$rsync -avz --progress --delete  \
+--include 'data/***'  --include 'artifacts/***'  --exclude='*'  \
  ./nanda_mats/  nanda_mats:/workspace/nanda_mats/
 
 STEP 4
@@ -54,13 +54,15 @@ STEP 12
 # verify dependency consistency
 $pip check
 
+STEP 5-12 ALL TOGETHER
+$pip install conda-pack && conda pack -n main -o /tmp/main.tar.gz && mkdir -p /workspace/nanda_mats/venv/nanda_mats && tar -xzf /tmp/main.tar.gz -C /workspace/nanda_mats/venv/nanda_mats && /workspace/nanda_mats/venv/nanda_mats/bin/conda-unpack && conda activate /workspace/nanda_mats/venv/nanda_mats && pip freeze > /tmp/pinned.txt && pip install -r nanda_mats/requirements.txt -c /tmp/pinned.txt --upgrade-strategy only-if-needed && pip check
 
 
 
 LAST STEP (AFTER THE CODE HAS BEEN MODIFIED REMOTELY OR RESULTS ARE BEING UPDATE IN THE REMOTE VM)
 # To update local diretory (with data not synced in github repo)
 # Run from the local terminal within the directory that contains the local nanda_mats/ folder
-$rsync -avz --progress --delete   --include 'data/'  --exclude='*'  nanda_mats:/workspace/nanda_mats/  ./nanda_mats/
+$rsync -avz --progress --delete   --include 'data/***'  --include 'artifacts/***'  --exclude='*'  nanda_mats:/workspace/nanda_mats/  ./nanda_mats/
 
 
 
@@ -83,3 +85,9 @@ STEP 4
 $huggingface-cli download meta-llama/Llama-3.1-8B-Instruct \
   --include "config.json" "generation_config.json" "tokenizer*" "model*" "special*"\
   --local-dir ./nanda_mats/models/llama-3.1-8b-instruct --local-dir-use-symlinks False
+
+STEP 1-4 ALL TOGETHER (remember to include real HF token)
+$printf "HF_TOKEN=<your_hf_token>" > .env && set -a; source .env; set +a && huggingface-cli download meta-llama/Llama-3.1-8B-Instruct \
+  --include "config.json" "generation_config.json" "tokenizer*" "model*" "special*"\
+  --local-dir ./nanda_mats/models/llama-3.1-8b-instruct --local-dir-use-symlinks False
+  

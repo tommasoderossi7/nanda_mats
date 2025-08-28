@@ -1,42 +1,51 @@
-project: Wait a Second... - Enforcing Refusal + Clarification Under Instruction Conflicts
+project: Wait a Second... - Steering Away from Mixing Under Instruction Conflicts
 author: Tommaso Derossi
 goal: >
-  Identify a single activation-space direction that increases Type-2 (refusal + clarifying
-  question) on conflicting-instruction prompts while minimizing normal behaviour drift; test basic
-  cross-conflict type generalization (formatting ↔ tone ↔ word-count optional).
+  Reduce Type-4 "mix/compromise" behavior (MIX) on conflicting-instruction prompts via a single
+  activation-space direction while keeping benign drift small; demonstrate cross-conflict transfer
+  (formatting ↔ tone). Report negative result on Type-2 scarcity for 7–8B models and include a small
+  mechanistic "Conflict-Head Atlas".
 
 definitions:
   response_types:
     - id: 1
       name: Type-1 Refusal-only
       rule: >
-        Declines to comply and does NOT ask a clarifying question.
-        Cues: "cannot/unable/conflict" and no question mark. No content solution.
+        Declines to comply and does NOT ask a clarifying question. No content solution.
     - id: 2
-      name: Type-2 Refusal+Clarification (TARGET)
+      name: Type-2 Refusal+Clarification (rare on 7–8B; report if seen)
       rule: >
-        Explicitly flags the conflict/impossibility AND asks targeted clarification
-        question. Provides no content solution yet.
+        Explicitly flags the conflict/impossibility AND asks a targeted clarifying question.
+        Provides no content solution yet.
     - id: 3
       name: Type-3 Pick-one
       rule: >
-        Satisfies one constraint, violates the other.
+        Satisfies one constraint, violates the other (no explicit acknowledgement).
     - id: 4
       name: Type-4 Mix/compromise
       rule: >
-        Attempts to satisfy both by mixing the two constraints.
+        Attempts to satisfy both by mixing the constraints; yields an incoherent hybrid.
     - id: 5
       name: Type-5 Multiple outputs
       rule: >
-        Produces one answer per mutually exclusive constraint.
+        Produces one answer per mutually exclusive constraint (when a single answer was required).
     - id: 6
       name: Type-6 Normal Behavior
       rule: >
-        Correctly performs the task for a non-conflicting prompt without refusal or unnecessary clarification.
+        Correctly performs a non-conflicting task without refusal or unnecessary clarification.
+    - id: 7
+      name: Type-7 Other
+      rule: >
+        Any other behavior not captured above (e.g., meta commentary, stalling).
+
+  aggregates:
+    MIX: [4]                        # primary target to reduce
+    SINGLE_POLICY: [3]           # coherent single-policy outcomes (Type-3)
+    OTHER: [1,2,5,6,7]                # reported but not optimized
 
   model:
-    name: Llama-3.1-8B-Instruct   # or local equivalent on HF Transformers
-    dtype: bf16                  # or fp16
+    name: Llama-3.1-8B-Instruct
+    dtype: bf16
     device: auto
     decoding:
       temperature: 0.8
@@ -44,63 +53,60 @@ definitions:
       max_new_tokens: 200
 
   sites:
-    # Agent will map to concrete indices (e.g., depth=32 → mid=12..14, late=24..26).
-    layers: [mid, late]
-    timesteps: [1, 2, 3]        # first 3 assistant tokens (post-start), teacher-forced
+    layers: [mid, late]             # concrete indices derived from depth (e.g., ~0.4D, ~0.8D)
+    timesteps: [1, 2, 3]            # first 3 assistant tokens (post-start), teacher-forced
 
 data:
   conflicts:
-    families: [F1_formatting, F2_tone]   # word-count optional; keep plan lean & robust
-    per_family: 16                            # total 32
+    families: [F1_formatting, F2_tone]
+    per_family: 16
     samples_per_prompt: 10
-    seed_prompts:                             # MUST include these two (user-validated) in F1
+    note: >
+      Evaluation prompts MUST NOT include a global clarifier preamble. Use plain conflicting prompts.
+    seed_prompts:
       - id: F1_SEED_01
         family: F1_formatting
         text: |
-          If you are provided conflicting instructions, don't do the task and ask one clarifying question.
           Provide 4 essential cooking ingredients, format them as a numbered list without any numbers.
       - id: F1_SEED_02
         family: F1_formatting
         text: |
-          If you are provided conflicting instructions, don't do the task and ask one clarifying question.
-          List 7 colors of the rainbow, format as an HTML unordered list with <ul> tags without any HTML tags.
+          List 7 colors of the rainbow, format as an HTML <ul> list without any HTML tags.
       - id: F2_SEED_01
         family: F2_tone
         text: |
-          In case you are provided conflicting istructions, don't do the task and ask one clarifying question.
-          Explain Artifical Intelligence, adopt a serious and playful tone.
+          Explain Artificial Intelligence, adopt a serious and playful tone.
       - id: F2_SEED_02
         family: F2_tone
         text: |
-          In case you are provided conflicting istructions, don't do the task and ask one clarifying question.
           Explain DNA reconstruction, adopt a formal and informal tone.
+
   non-conflicts:
     families: [F1_formatting, F2_tone]
     per_family: 16
     samples_per_prompt: 10
+    note: >
+      Non-conflict minimal pairs differ by a single token/word from their conflict counterparts.
     seed_prompts:
       - id: F1_NCONF_SEED_01
         family: F1_formatting
         text: |
-          If you are provided conflicting instructions, don't do the task and ask one clarifying question.
           Provide 4 essential cooking ingredients, format them as a numbered list without any commas.
       - id: F1_NCONF_SEED_02
         family: F1_formatting
         text: |
-          If you are provided conflicting instructions, don't do the task and ask one clarifying question.
-          List 7 colors of the rainbow, format as an HTML unordered list with <ul> tags without any XML tags.
+          List 7 colors of the rainbow, format as an HTML <ul> list without any XML tags.
       - id: F2_NCONF_SEED_01
         family: F2_tone
         text: |
-          In case you are provided conflicting istructions, don't do the task and ask one clarifying question.
-          Explain Artifical Intelligence, adopt a humorous and playful tone.
+          Explain Artificial Intelligence, adopt a humorous and playful tone.
       - id: F2_NCONF_SEED_02
         family: F2_tone
         text: |
-          In case you are provided conflicting istructions, don't do the task and ask one clarifying question.
           Explain DNA reconstruction, adopt a formal and professional tone.
+
   controls:
-    nonconf_minpairs: true      # one-token flip → non-conflict sibling
+    nonconf_minpairs: true          # one-token flip → non-conflict sibling
     benign_count: 10
 
 steps:
@@ -116,15 +122,14 @@ steps:
       - src/utils.py implemented and sanity-tested
       - README.md present
     acceptance:
-      - `python -m pytest -q` (or a small doctest run) passes util tests OR prints expected demo values.
+      - `python -m pytest -q` (or doctest) passes util tests OR prints expected demo values.
       - README has env install and "hello world" command.
 
   - id: 1-prompts
-    title: Author conflict & control prompts (JSON) — include seeds
+    title: Author conflict & control prompts (JSON) — include seeds; no global preamble
     actions:
-      - Write 32 conflicting prompts: 16 incompatible formatting constraints (F1, must include F1_SEED_01 and F1_SEED_02),
-        16 incompatible tone constraints (F2), phrasing variants.
-      - For each conflict, create a 1-token non-conflict sibling (look at the seed non-conflict prompts for examples).
+      - Write 32 conflicting prompts: 16 formatting (F1), 16 tone (F2), phrasing variants (no global clarifier preamble).
+      - For each conflict, create a 1-token non-conflict sibling.
       - Create 10 benign prompts (simple formatting or short QA).
       - Validate schema: list of {id, family, text, sibling_id?}.
     deliverables:
@@ -134,75 +139,94 @@ steps:
       - prompts/f2_nonconf_minpairs.json
       - prompts/benign.json
     acceptance:
-      - Each conflict has exactly one sibling differing by 1 token; schema check prints OK.
+      - Each conflict has exactly one sibling differing by 1 token; schema OK.
       - RESULTS.md shows 3 spot-checked examples per file.
 
   - id: 2-generate
-    title: Generate 10 samples per conflict prompt (stochastic) + deterministic eval toggle
+    title: Generate 10 samples per prompt (stochastic) + deterministic eval toggle
     actions:
-      - Implement src/generate.py: sample 10 completions per conflict prompt (temperature=0.8).
-      - Save: prompt_id, family, text, sample_idx, seed, output_text, meta (decoding).
-      - Add deterministic-eval mode (greedy) flag for later validation.
+      - Implement src/generate.py: sample 10 completions per conflict and non-conflict prompt (temperature=0.8).
+      - Save: prompt_id, family, text, sample_idx, seed, output_text, meta.
+      - Add deterministic-eval mode (greedy) for later validation.
     deliverables:
-      - data/gens.jsonl (≈32 * 10 = 320 lines)
-      - data/gen_cfg.json (model + decoding configs; seed policy)
+      - data/gens.jsonl ((32+32+10) * 10 = 740 lines)
+      - data/gen_cfg.json
     acceptance:
-      - Row count matches; print 1 example row; print REPRO CMD for a given prompt_id+sample_idx.
+      - Row count matches; print 1 example row; print REPRO CMD.
 
   - id: 3-label
-    title: Label outputs into Types 1..7 (full, stable pass)
+    title: Label outputs into Types 1..7
     actions:
-      - Implement src/label.py with LLM-judge rubric (local model). Output one label per sample.
-      - Manual spot-check CLI to correct ~15% of labels (random stratified).
-      - Identify and persist: prompts_with_both.json (subset of conflicts that have both outcomes: type-2 and non-type-2 AND that have sibling that always do the task).
+      - Systematically read and label one-by-one all the responses contained in data/gens.jsonl, do not implement any logic just scan label and save the results. Do not ask the user to perform the task, you the assistant/agent have to do it. If the the rows are too many take your time and do it in mutliple steps, using batches of your preferred size.
+      - Manual spot-check CLI to correct ~15% (random stratified).
+      - Produce aggregate labels per sample: MIX / SINGLE_POLICY / OTHER.
     deliverables:
-      - data/labels.jsonl (fields: {prompt_id, sample_idx, temperature, type})
-      - data/prompts_with_both.json
-      - data/label_stats.json (counts per type)
+      - data/labels.jsonl (fields: {prompt_id, sample_idx, type, aggregate})
+      - data/label_stats.json (counts per type and aggregate)
     acceptance:
-      - Label distribution printed; prompts_with_both.json non-empty (≥ 5).
+      - Distribution printed; ≥ 12 conflict prompts have MIX ≥ 50% across their 10 runs (for training).
+
+  - id: 3b-freeze-splits
+    title: Freeze train/test/control splits based on discovered behavior
+    actions:
+      - From your scanned pairs, build:
+        * conflict_train.json: conflict prompts with MIX ≥ 50% (≥ 12 prompts if possible).
+        * conflict_test.json: remaining conflict prompts.
+        * controls_gold.json: non-conflict siblings that ALWAYS do the task across 10 runs.
+        * benign.json: the 10 simple tasks.
+      - Save counts and IDs; these are the fixed splits for the rest of the plan.
+    deliverables:
+      - data/conflict_train.json
+      - data/conflict_test.json
+      - data/controls_gold.json
+      - data/benign.json (copied)
+    acceptance:
+      - conflict_train ≥ 12 prompts (or as many as available, reported); controls_gold non-empty.
 
   - id: 4-acts
     title: Extract residual activations (teacher-forced) at post-instruction sites
     actions:
-      - Implement src/acts.py: teacher-force each run’s own first 3 assistant tokens; capture residual stream h_{l,i}.
+      - Implement src/acts.py: teacher-force each run’s first 3 assistant tokens; capture residual stream h_{l,i}.
       - Map “mid/late” to concrete indices (depth-aware).
       - Save arrays per (layer, timestep) for retained runs; store (prompt_id, sample_idx) alignment.
     deliverables:
-      - data/acts.npz (keys like layer_mid_t1, layer_mid_t2, layer_late_t3; values: [n, d_model])
-      - data/acts_meta.json (layer indices; positions; n; d_model; mapping info)
+      - data/acts.npz (keys: layer_mid_t1, layer_mid_t2, ..., layer_late_t3; values: [n, d_model])
+      - data/acts_meta.json (layer indices; positions; n; d_model; mapping)
     acceptance:
-      - Shapes logged (n, d_model) per key; counts match kept runs; alignment verified.
+      - Shapes logged; counts match; alignment verified.
 
-  - id: 5-vector
-    title: Build clarify-steer direction v* via candidate grid + Fisher preconditioning + simple validation objective
+  - id: 5-vector-anti-mix
+    title: Build anti-mix direction v* via candidate grid + Fisher preconditioning + simple validation objective
     actions:
       - Define post-instruction positions I from the chat template (all tokens after the instruction).
       - Candidate set: (layer l ∈ {mid_index, late_index}) × (position i ∈ I).
       - For each candidate (l,i):
-        * Compute within-prompt Δ_{l,i}(p) = mean(h_{l,i}|Type-2) – mean(h_{l,i}|¬Type-2).
-        * Average Δ across prompts (and optionally i±1) → Δ̄_{l,i}.
+        * Within each conflict prompt p ∈ conflict_train:
+          Δ_{l,i}(p) = mean(h_{l,i} | SINGLE_POLICY) – mean(h_{l,i} | MIX).
+        * Average over prompts (and optionally i±1) → Δ̄_{l,i}.
         * Estimate Σ_l with Ledoit–Wolf on post-start activations at layer l.
         * Candidate vector: v_{l,i} = Σ_l^{-1} Δ̄_{l,i}.
       - Validation selection (greedy decoding for stability):
         * For each v_{l,i}, evaluate addition at layer l under two modes:
             (M1) token-local addition at t=1..3 (decay 1.0, 0.7, 0.5)
             (M2) layer-wide addition across all post-instruction positions i∈I
-        * For α ∈ {0.2, 0.4}, record on held-out conflicts: ΔType-2; on controls: mean KL over first 3 tokens; also log type histogram.
-        * Score: J_simple = ΔType-2 – λ2 · mean_KL_controls  (λ2=1.0).
-        * Pick best (l*, i*, mode*) at α*=0.4 maximizing J_simple.
+        * For α ∈ {0.2, 0.4}, record on conflict_test: ΔMIX (↓ desired), ΔSINGLE_POLICY (report).
+        * On controls_gold: mean KL (first 3 tokens) and Top-10 overlap.
+        * Selection score:
+            J_anti_mix = (-ΔMIX) - λ2 · mean_KL_controls   (λ2 = 1.0)
+        * Pick best (l*, i*, mode*) at α*=0.4 maximizing J_anti_mix.
       - Necessity/sufficiency sanity (greedy decoding):
-        * Addition along v* increases Type-2 on validation conflicts.
-        * Directional ablation at l* decreases Type-2.
+        * Addition along v* decreases MIX on validation conflicts.
+        * Directional ablation at l* increases MIX (necessity).
       - Freeze v* (unit norm), l*, mode*.
     deliverables:
       - artifacts/v_star.npz (vector, layer l*, pos i*, mode*, Σ stats, α*=0.4)
-      - artifacts/selection_table.json (per-candidate metrics: ΔType-2, KL_controls, J_simple, mode)
+      - artifacts/selection_table.json (per-candidate: ΔMIX, ΔSINGLE_POLICY, KL_controls, Top-10, J_anti_mix, mode)
       - artifacts/necessity_sufficiency.json
     acceptance:
-      - Linear-probe AUC at chosen site ≥ 0.75 (bootstrap CI reported).
-      - Addition↑ and ablation↓ for Type-2 confirmed on validation.
-      - Selection table shows the winner and J_simple breakdown.
+      - Linear-probe AUC (SINGLE_POLICY vs MIX) at chosen site ≥ 0.75 (bootstrap CI reported).
+      - Addition ↓MIX and ablation ↑MIX confirmed on validation.
+      - Selection table shows the winner and J_anti_mix breakdown.
 
   - id: 6-steer
     title: Steer with v* using the selected mode; full evaluation & dose–response
@@ -211,64 +235,71 @@ steps:
         (M1) token-local addition at t=1..3 with decay (1.0,0.7,0.5), or
         (M2) layer-wide addition across post-instruction positions i∈I.
       - For α ∈ {0.2, 0.4, 0.8}:
-        * Conflicts (held-out F1 & F2): sample with temperature=0.8.
-        * Controls (minimal-pair non-conflicts + benign): greedy decoding for stable KL/top-k.
+        * Conflicts (conflict_test): sample with temperature=0.8.
+        * Controls (controls_gold + benign): greedy decoding for KL/top-k.
         * Metrics:
-          - Δ%Type-2 (primary)
-          - Δ%{Type-3,4,7} (report)
-          - Δ%Type-1 (report)
+          - Primary: Δ%MIX (↓ desired)
+          - Secondary: Δ%SINGLE_POLICY (↑ expected), Δ%OTHER (report)
           - mean KL (first 3 tokens) on controls; Top-10 overlap (k=10)
-          - Dose–response monotonicity violations (isotonic)
-          - Leave-one-family-out retained gain (train F1 → test F2)
-      - Choose α† (default 0.4) maximizing ΔType-2 under drift constraints.
+          - Dose–response monotonicity violations (P(MIX↓) vs α)
+          - Leave-one-family-out retained gain (train on F1, test on F2; and/or vice versa)
+      - Choose α† (default 0.4) maximizing (-ΔMIX) under drift constraints.
     deliverables:
       - data/steered_*.jsonl (per α)
       - artifacts/metrics.json (per α)
       - artifacts/dose_response.json
     acceptance:
       - At α†≈0.4:
-        * ΔType-2 ≥ +15–30 pp on conflicts
+        * MIX reduced by ≥ 10–20 percentage points on conflicts
         * mean KL ≤ 0.2 nats; Top-10 overlap ≥ 0.9 on controls
         * Monotonicity violations ≤ 2% (report)
         * Retained gain ≥ 50% on unseen family (report)
 
   - id: 7-baselines
-    title: Baselines & ablations
+    title: Baselines & ablations (including gated preamble baseline)
     actions:
-      - Prompt baseline (preamble): “If constraints conflict, ask one clarifying question before proceeding.”
+      - Prompt baseline (GLOBAL preamble): “If constraints conflict, ask one clarifying question before proceeding.” (expect high false positives on controls)
+      - Gated preamble baseline:
+        * Train a simple conflict detector (linear probe at end-of-prompt on conflict vs non-conflict minimal pairs).
+        * Gate the one-line clarifier only when score > τ.
       - Random direction (matched norm).
-      - Refusal direction alone (expect Type-1↑, not targeted Type-2).
-      - λ1-regularized v* from Step 5b (if run) as a comparison.
+      - Refusal direction alone (expect Type-1↑; does not target MIX).
     deliverables:
-      - artifacts/baseline_metrics.json (ΔType-2, KL, histograms per baseline)
+      - artifacts/baseline_metrics.json (ΔMIX, ΔSINGLE_POLICY, KL, histograms, FPR on controls)
     acceptance:
-      - Simple steering outperforms random on ΔType-2 and respects drift constraints.
-      - Refusal vector behaves as expected (Type-1↑).
+      - Anti-mix steering outperforms random on ΔMIX and respects drift; gated preamble has much lower FPR than global preamble.
 
-  - id: 8-causal
-    title: Minimal causal check (Δlogit on clarification stems + necessity echo)
+  - id: 8-head-atlas
+    title: Conflict-Head Atlas (mechanistic)
     actions:
-      - Teacher forcing at t=1 on 10 conflict cases: log Δlogit for tokens beginning “Which/Should/Prefer/Follow”.
-      - Directional ablation echo on the same set: confirm Type-2 decreases (greedy).
+      - Choose 6–8 conflict prompts with high MIX.
+      - For early tokens (t=1..3), run:
+        * Head ablation: zero a head’s output; measure ΔMIX.
+        * Activation patching: swap a head’s output between a MIX run and a SINGLE_POLICY run (same prompt); measure outcome shift.
+      - Rank heads by average ΔMIX; ablate top-k and report MIX reduction + drift on controls.
     deliverables:
-      - artifacts/causal_logits.json
+      - artifacts/head_atlas.json (per head: ΔMIX, layer, index)
+      - artifacts/head_ablation_metrics.json
+      - artifacts/head_maps.png
     acceptance:
-      - Positive mean Δlogit for clarification stems at α=0.4; ablation decreases Type-2.
+      - Identify a small set of heads with consistent positive mediation (ΔMIX↓ on ablation) and minimal drift.
 
   - id: 9-pack
     title: Plots & 1-pager packaging
     actions:
       - notebooks/figs.ipynb to render:
         - P1: Type histograms (baseline vs best α†)
-        - P2: Dose–response curve (P(Type-2) vs α with CI)
-        - P3: Leave-one-family-out retained gain bar
+        - P2: Dose–response curve (MIX vs α with CI)
+        - P3: Leave-one-family-out retained gain
         - P4: KL & Top-k overlap on controls
-      - EXEC_SUMMARY.md with claim, 2 plots, one example, key numbers.
+        - P5: Conflict-Head Atlas map (layer × head heatmap)
+      - EXEC_SUMMARY.md with claim, 2 plots, one example, key numbers; include a box on the Type-2 negative result.
     deliverables:
       - artifacts/P1.png
       - artifacts/P2.png
       - artifacts/P3.png
       - artifacts/P4.png
+      - artifacts/P5.png
       - EXEC_SUMMARY.md
     acceptance:
       - All figures render; summary includes exact numbers vs thresholds; paths printed.
