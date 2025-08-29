@@ -145,7 +145,7 @@ steps:
   - id: 1b-freeze-test-set
     title: Author and freeze Final Test Set (held-out)
     actions:
-      - Author ~12 new, distinct conflict prompts (and their 1-token non-conflict siblings) matching the Dev distribution.
+      - Author ~12 new, distinct conflict prompts (and their 1-token non-conflict siblings) matching the Dev distribution (check for conflicts in dev_f1_conflicts.json and dev_f2_conflicts.json and for non-conflicts 1-token simblings in dev_f1_nonconf_minpairs.json and dev_f2_nonconf_minpairs.json).
       - Save to prompts/final_test_set.json and prompts/final_test_nonconf.json.
       - Mark as LOCKED: do not generate/label/analyze until Step 6.
     deliverables:
@@ -183,37 +183,111 @@ steps:
     acceptance:
       - Distribution printed; ≥ 12 conflict prompts have MIX ≥ 50% across their 10 runs (candidate training set).
 
-  - id: 3b-freeze-splits
+  - id: 3b-freeze-splits-across
     title: Split Development Set into Train / Validation / Controls
     actions:
+      - create data/dev_label_stats.json (counts per type and aggregate) from data/dev_labels_corrected.jsonl
       - From data/dev_labels_corrected.jsonl:
-        * data/splits/conflict_train.json: conflict prompts with MIX ≥ 50%.
-        * data/splits/conflict_validation.json: remaining conflict prompts.
-        * data/splits/controls_gold.json: non-conflict siblings with 10/10 Type-6 (always-task).
+        * data/splits_across/conflict_train.json: conflict prompts with MIX ≥ 50%.
+        * data/splits_across/conflict_validation.json: remaining conflict prompts.
+        * data/splits_across/controls_gold.json: non-conflict siblings with 10/10 Type-6 (always-task).
         * data/benign.json: copy of prompts/dev_benign.json.
       - Save counts and IDs; these are fixed for the rest of the plan.
     deliverables:
-      - data/splits/conflict_train.json
-      - data/splits/conflict_validation.json
-      - data/splits/controls_gold.json
+      - data/splits_across/conflict_train.json
+      - data/splits_across/conflict_validation.json
+      - data/splits_across/controls_gold.json
       - data/benign.json
     acceptance:
       - conflict_train ≥ 12 prompts (or as many as available, reported).
       - controls_gold non-empty.
 
-  - id: 4-acts
+  - id: 3b-freeze-splits-within
+    title: Partition Development Set based on Prompt Entropy
+    actions:
+      - name: Identify High-Entropy Prompts (Primary Train Set)
+        details: |
+          Analyze labels for all conflict prompts in the Development Set.
+          Create the primary training set (conflict_train) by selecting prompts that are
+          "high-entropy": at least 3 MIX samples AND at least 3 SINGLE_POLICY samples
+          among the 10 runs (i.e., MIX rate in [30%, 70%], inclusive).
+          Record the resulting count of prompts in conflict_train.
+        criteria:
+          min_mix_samples: 3
+          min_single_policy_samples: 3
+          mix_rate_range: [0.3, 0.7]
+        outputs:
+          - count_conflict_train
+      - name: Define Validation Set and Finalize Splits (Primary Path)
+        condition: "len(conflict_train) >= 5"
+        details: |
+          Use the high-entropy prompts as the training set.
+          Define conflict_validation as all remaining conflict prompts from the Development Set.
+          This validation set will skew toward more imbalanced prompts (<30% MIX or >70% MIX),
+          providing a harder generalization test away from the decision boundary.
+          Proceed in Step 5 with the "Within-Prompt DoM" method.
+        produces:
+          - data/splits_within/conflict_train.json
+          - data/splits_within/conflict_validation.json
+        notes:
+          method_for_step_5: "Within-Prompt DoM"
+      - name: Define Fallback Splits (Fallback Path)
+        condition: "len(conflict_train) < 5"
+        details: |
+          If there are fewer than 5 high-entropy prompts, report this scarcity.
+          Revert to the monotonic split:
+            - conflict_train: all conflict prompts with MIX rate ≥ 50%
+            - conflict_validation: all conflict prompts with MIX rate < 50%
+          Proceed in Step 5 with the "Across-Prompt DoM" fallback.
+        produces:
+          - data/splits_within/conflict_train.json
+          - data/splits_within/conflict_validation.json
+        notes:
+          method_for_step_5: "Across-Prompt DoM"
+      - name: Define Control Set (Unchanged)
+        details: |
+          controls_gold.json = all non-conflict sibling prompts in the Development Set
+          where 10/10 samples were Type-6 (always-task). Used for drift regardless of path.
+        produces:
+          - data/splits_within/controls_gold.json
+    deliverables:
+      - data/splits_within/conflict_train.json
+      - data/splits_within/conflict_validation.json
+      - data/splits_within/controls_gold.json
+      - data/splits_within/method_report.json
+    acceptance:
+      - A clear train and validation split is created per the data-driven logic above.
+      - data/splits_within/method_report.json clearly states whether the Primary (Entropy) or
+        Fallback (Monotonic) split was used and includes count_conflict_train.
+
+  - id: 4-acts-across
     title: Extract residual activations (teacher-forced) at post-instruction sites
     actions:
       - Implement src/acts.py: teacher-force each run’s first 3 assistant tokens; capture residual stream h_{l,i}.
       - Map “mid/late” to concrete indices (depth-aware).
       - Save arrays per (layer, timestep) for runs in conflict_train + their labels; store (prompt_id, sample_idx) alignment.
     deliverables:
-      - data/acts_train.npz (keys: layer_mid_t1, layer_mid_t2, ..., layer_late_t3; values: [n, d_model])
-      - data/acts_train_meta.json (layer indices; positions; n; d_model; mapping)
+      - data/acts/across/train.npz (keys: layer_mid_t1, layer_mid_t2, ..., layer_late_t3; values: [n, d_model])
+      - data/acts/across/train_meta.json (layer indices; positions; n; d_model; mapping)
     acceptance:
       - Shapes logged; counts match; alignment verified.
 
-  - id: 5-vector-anti-mix
+  - id: 4-acts-within
+    title: Extract residual activations from the Training Set
+    actions:
+      - "Implement src/acts.py."
+      - "Load the list of prompt IDs from data/splits_within/conflict_train.json."
+      - "For every sample corresponding to these training prompts, teacher-force its first 3 assistant tokens and capture the residual stream activations h_{l,i}."
+      - "Map the symbolic layer names ('mid'/'late') to concrete, depth-aware layer indices."
+      - "Save the activation arrays to a compressed file and create a separate metadata file that maps each activation vector back to its original prompt_id and sample_idx."
+    deliverables:
+      - "data/acts/within/train.npz (keys: e.g., 'layer_15_t1', 'layer_30_t3'; values: stacked activation tensors [num_samples, d_model])"
+      - "data/acts/within/train_meta.json (contains layer indices, timesteps, and an ordered list mapping [prompt_id, sample_idx] to the rows in the .npz tensors)"
+    acceptance:
+      - "The number of activation vectors (num_samples) in each saved array exactly matches the number of samples in the conflict_train set (i.e., len(conflict_train_prompts) * 10)."
+      - "The metadata file correctly aligns the data."
+
+  - id: 5-vector-anti-mix-across
     title: Build anti-mix direction v* via candidate grid + Fisher preconditioning + validation selection
     actions:
       - Define post-instruction positions I from the chat template (all tokens after the instruction).
@@ -237,13 +311,111 @@ steps:
         * Directional ablation at l* increases MIX (necessity).
       - Freeze v* (unit norm), l*, mode*.
     deliverables:
-      - artifacts/v_star.npz (vector, layer l*, pos i*, mode*, Σ stats, α*=0.4)
-      - artifacts/selection_table.json (per-candidate: ΔMIX, ΔSINGLE_POLICY, KL_controls, Top-10, J_anti_mix, mode)
-      - artifacts/necessity_sufficiency.json
+      - artifacts/v_star_across.npz (vector, layer l*, pos i*, mode*, Σ stats, α*=0.4)
+      - artifacts/selection_table_across.json (per-candidate: ΔMIX, ΔSINGLE_POLICY, KL_controls, Top-10, J_anti_mix, mode)
+      - artifacts/necessity_sufficiency_across.json
     acceptance:
       - Linear-probe AUC (SINGLE_POLICY vs MIX) at chosen site ≥ 0.75 (bootstrap CI reported).
       - Addition ↓MIX and ablation ↑MIX confirmed on validation.
       - Selection table shows the winner and J_anti_mix breakdown.
+
+  - id: 5a-vector-creation-and-generation-within
+    title: "Build Candidate Vectors and Generate All Validation Responses"
+    actions:
+      - name: "Build Candidate Steering Vectors"
+        steps:
+          - "Identify high-entropy prompts (P_entropy) from data/splits_within/conflict_train.json (at least 3 MIX and 3 SINGLE_POLICY samples). Log the count."
+          - condition: "len(P_entropy) >= 5"
+            path: "Primary Path — Within-Prompt DoM"
+            steps:
+              - "For each candidate site (l,i), compute the Within-Prompt DoM vector v_{l,i} by first calculating Δ_p for each prompt in P_entropy and then averaging them."
+              - "Record that the 'Within-Prompt' method was used."
+          - condition: "len(P_entropy) < 5"
+            path: "Fallback Path — Across-Prompt DoM"
+            steps:
+              - "For each candidate site (l,i), compute the Across-Prompt DoM vector v_{l,i} by pooling all samples from conflict_train.json."
+              - "Record that the 'Across-Prompt' method was used."
+          - "Save all computed candidate vectors to a single file."
+      - name: "Generate Baseline and Steered Responses"
+        steps:
+          - name: "Baseline Generation (No Intervention)"
+            steps:
+              - "Generate 10 responses per prompt for data/splits_within/conflict_validation.json using greedy decoding. Save to data/gens/baseline_validation_greedy.jsonl."
+              - "Generate 10 responses per prompt for data/splits_within/controls_gold.json using greedy decoding. Save to data/gens/baseline_controls_greedy.jsonl."
+          - name: "Steered Generation Loop"
+            loops:
+              - "for each candidate vector v_{l,i}"
+              - "for each mode m in {M1, M2}"
+              - "for each strength α in {0.2, 0.4}"
+            steps:
+              - "Generate 10 responses per prompt for data/splits_within/conflict_validation.json under these steering settings. Save to data/gens/steered_val_l{l}_i{i}_m{m}_a{a}.jsonl."
+              - "Generate 10 responses per prompt for data/splits_within/controls_gold.json under the same settings. Save to data/gens/steered_controls_l{l}_i{i}_m{m}_a{a}.jsonl."
+    deliverables:
+      - path: "artifacts/within/candidate_vectors.npz"
+        desc: "A single file containing ALL computed candidate vectors, keyed by their layer and position."
+      - path: "artifacts/within/method_report.json"
+        desc: "Reports which method (Within-Prompt vs. Across-Prompt) was used and |P_entropy|."
+      - path: "data/gens/within/"
+        desc: "Baseline and all steered generation files for validation and controls."
+    acceptance:
+      - "artifacts/within/method_report.json is created and correctly identifies the path taken."
+      - "The number of generated files matches the number of candidates × modes × strengths tested."
+
+  - id: 5b-labeling-phase-within
+    title: "Label Steered Validation Responses"
+    actions:
+      - name: "Prepare Labeling Queue"
+        steps:
+          - "List all data/gens/within/steered_val_*.jsonl files produced in Step 5a."
+          - "Do NOT re-label data/gens/within/baseline_validation_greedy.jsonl; its labels already exist in data/dev_labels_corrected.jsonl."
+      - name: "Execute Labeling"
+        steps:
+          - "For each file in the queue, run the same LLM-judge + 15% manual spot-check pipeline used in Step 3."
+          - "Save labels to data/labels/labeled_steered_val_l{l}_i{i}_m{m}_a{a}.jsonl (one label file per steered input file)."
+    deliverables:
+      - path: "data/labels/within/"
+        desc: "One labeled_steered_val_*.jsonl per steered validation file."
+    acceptance:
+      - "Every data/gens/within/steered_val_*.jsonl has a corresponding file in data/labels/within/ with the same parameter signature."
+      - "Logs confirm the Step-3 labeling methodology (judge + spot-check) was reused."
+
+  - id: 5c-effect-measurement-and-selection-within
+    title: "Measure Intervention Effect and Select Final Vector"
+    actions:
+      - name: "Establish Baseline Metrics"
+        steps:
+          - "Load validation labels for the baseline (from data/dev_labels_corrected.jsonl corresponding to data/gens/baseline_validation_greedy.jsonl)."
+          - "Compute and store MIX_rate_baseline."
+      - name: "Analyze Steered Results"
+        steps:
+          - "Initialize an empty selection_table."
+          - "For each labeled file data/labels/labeled_steered_val_l{l}_i{i}_m{m}_a{a}.jsonl:"
+          - "Parse (l, i, mode, alpha) from the filename."
+          - "Compute MIX_rate_steered and SINGLE_POLICY_rate_steered."
+          - "Compute ΔMIX = MIX_rate_steered - MIX_rate_baseline and ΔSINGLE_POLICY."
+          - "Load matching steered controls (data/gens/steered_controls_l{l}_i{i}_m{m}_a{a}.jsonl) and baseline controls (data/gens/baseline_controls_greedy.jsonl)."
+          - "Compute drift metrics: mean_KL (first 3 tokens) and Top10_overlap."
+          - "Compute J_anti_mix = (-ΔMIX) - 1.0 * mean_KL."
+          - "Append a row with all metrics to selection_table."
+      - name: "Select Best Vector"
+        steps:
+          - "Filter selection_table to rows with alpha == 0.4."
+          - "Pick the row with max J_anti_mix; record winning (l*, i*, mode*)."
+      - name: "Finalize Deliverables"
+        steps:
+          - "Load artifacts/within/candidate_vectors.npz."
+          - "Extract the vector for (l*, i*); save single best vector to artifacts/within/v_star.npz with metadata {layer: l*, position: i*, mode: mode*, alpha: 0.4}."
+          - "Save selection_table to artifacts/within/selection_table.json."
+    deliverables:
+      - path: "artifacts/within/v_star.npz"
+        desc: "The single best-performing vector v* with its winning metadata."
+      - path: "artifacts/within/selection_table.json"
+        desc: "Detailed table of metrics for every candidate, used to make the final selection."
+    acceptance:
+      - "artifacts/within/selection_table.json is fully populated and saved."
+      - "The chosen v* corresponds to the entry with the highest J_anti_mix score at α = 0.4."
+      - "The winning candidate’s ΔMIX is negative (MIX reduction confirmed)."
+
 
   - id: 6-steer
     title: Final Evaluation on the held-out Final Test Set

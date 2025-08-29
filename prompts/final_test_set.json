@@ -1,0 +1,74 @@
+[
+    {
+        "id": "F1_TEST_01",
+        "family": "F1_formatting",
+        "text": "Create a multi-line output that fits on a single line without any line breaks.",
+        "sibling_id": "F1_TEST_NCONF_01"
+    },
+    {
+        "id": "F1_TEST_02",
+        "family": "F1_formatting",
+        "text": "Write code comments that contain no text or characters.",
+        "sibling_id": "F1_TEST_NCONF_02"
+    },
+    {
+        "id": "F1_TEST_03",
+        "family": "F1_formatting",
+        "text": "Generate a password that is both completely visible and entirely hidden.",
+        "sibling_id": "F1_TEST_NCONF_03"
+    },
+    {
+        "id": "F1_TEST_04",
+        "family": "F1_formatting",
+        "text": "Create a table with rows and columns but without any rows or columns.",
+        "sibling_id": "F1_TEST_NCONF_04"
+    },
+    {
+        "id": "F1_TEST_05",
+        "family": "F1_formatting",
+        "text": "Write text that is both bold and italic, but use no formatting whatsoever.",
+        "sibling_id": "F1_TEST_NCONF_05"
+    },
+    {
+        "id": "F1_TEST_06",
+        "family": "F1_formatting",
+        "text": "Provide a response in exactly 50 words that contains exactly 100 words.",
+        "sibling_id": "F1_TEST_NCONF_06"
+    },
+    {
+        "id": "F2_TEST_01",
+        "family": "F2_tone",
+        "text": "Describe a vacation experience that is both relaxing and stressful.",
+        "sibling_id": "F2_TEST_NCONF_01"
+    },
+    {
+        "id": "F2_TEST_02",
+        "family": "F2_tone",
+        "text": "Write a job application cover letter that is both confident and insecure.",
+        "sibling_id": "F2_TEST_NCONF_02"
+    },
+    {
+        "id": "F2_TEST_03",
+        "family": "F2_tone",
+        "text": "Explain climate change in a way that is both urgent and dismissive.",
+        "sibling_id": "F2_TEST_NCONF_03"
+    },
+    {
+        "id": "F2_TEST_04",
+        "family": "F2_tone",
+        "text": "Write a restaurant menu description that is both appetizing and revolting.",
+        "sibling_id": "F2_TEST_NCONF_04"
+    },
+    {
+        "id": "F2_TEST_05",
+        "family": "F2_tone",
+        "text": "Create a social media post that is both trendy and outdated.",
+        "sibling_id": "F2_TEST_NCONF_05"
+    },
+    {
+        "id": "F2_TEST_06",
+        "family": "F2_tone",
+        "text": "Write a product manual that is both technical and anti-technical.",
+        "sibling_id": "F2_TEST_NCONF_06"
+    }
+]
