@@ -1,3 +1,5 @@
+Vast.ai Ubuntu VMs
+
 SETUP VM & SYNC CODE-DATA
 
 STEP 1
@@ -90,4 +92,43 @@ STEP 1-4 ALL TOGETHER (remember to include real HF token)
 $printf "HF_TOKEN=<your_hf_token>" > .env && set -a; source .env; set +a && huggingface-cli download meta-llama/Llama-3.1-8B-Instruct \
   --include "config.json" "generation_config.json" "tokenizer*" "model*" "special*"\
   --local-dir ./nanda_mats/models/llama-3.1-8b-instruct --local-dir-use-symlinks False
-  
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Windows Desktop machine
+
+SETUP VM & SYNC CODE-DATA
+
+STEP 1
+# Clone the github directory inside the chosen project root with User interface clicks
+
+STEP 2 cmd SYNTAX
+# create virtual env folder
+$conda create -n nanda_mats -y python=3.11
+
+STEP 3 cmd SYNTAX
+# activate the virtual env
+$conda activate nanda_mats
+
+STEP 4 cmd SYNTAX
+# install packages listed in requirements.txt
+$python -m pip install --upgrade pip setuptools wheel
+$python -m pip install -r .\requirements.txt
+
+STEP 2-4 cmd SYNTAX --- ALL TOGETHER
+$conda create -n nanda_mats -y python=3.11 && conda activate nanda_mats && python -m pip install --upgrade pip setuptools wheel && python -m pip install -r .\requirements.txt
+
+
+DOWNLOAD HF MODEL
+
+STEP 1 cmd SYNTAX
+# put hf read token inside a .env file, from within the project directory execute
+$echo HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx> .env
+
+STEP 2 cmd SYNTAX
+# load all KEY=VALUE pairs from .env into the current cmd session
+$for /f "usebackq tokens=1,* delims==" %a in (".env") do @if not "%a"=="" if not "%a:~0,1%"=="#" set "%a=%b"
+
+STEP 3 cmd SYNTAX --- ALL TOGETHER
+# download the model and all required config files
+$huggingface-cli download meta-llama/Llama-3.1-8B-Instruct --include "config.json" "generation_config.json" "tokenizer*" "model*" "special*" --local-dir .\models\llama-3.1-8b-instruct --local-dir-use-symlinks False
