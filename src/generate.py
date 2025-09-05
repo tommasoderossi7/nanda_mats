@@ -187,16 +187,12 @@ def main():
                        help="Base seed for reproducibility")
     parser.add_argument("--deterministic", action="store_true", 
                        help="Use deterministic (greedy) generation")
-    parser.add_argument("--output", default="data/gens.jsonl", 
-                       help="Output file path")
-    parser.add_argument("--logits_output", default="data/logits.jsonl", 
-                       help="Logits output file path")
-    parser.add_argument("--config_output", default="data/gen_cfg.json", 
-                       help="Config output file path")
-    parser.add_argument("--save_logits", action="store_true", default=True,
-                       help="Save first 3 token logits (default: True)")
-    parser.add_argument("--no_logits", action="store_true", 
-                       help="Don't save logits (overrides --save_logits)")
+    parser.add_argument("--prompts_to_gen", default="dev",
+                       help="generations split to label (dev/test)")
+    parser.add_argument("--save_logits", action="store_true", default=False,
+                       help="Save first 3 token logits (default: False)")
+    parser.add_argument("--save_nothing", action="store_true",
+                       help="Don't save anything (for quick tests)")
     parser.add_argument("--repro_prompt_id", help="Prompt ID for REPRO CMD")
     parser.add_argument("--repro_sample_idx", type=int, help="Sample index for REPRO CMD")
     parser.add_argument("--conflict_family", 
@@ -208,6 +204,15 @@ def main():
     
     args = parser.parse_args()
     
+    if args.prompt_string:
+        responses_output = "data/" + "exp" + "_gens.jsonl"
+        logits_output = "data/" + "exp" + "_logits.jsonl"
+        config_output = "data/" + "exp" + "_gen_cfg.json"
+
+    responses_output = "data/" + args.prompts_to_gen + "_gens.jsonl"
+    logits_output = "data/" + args.prompts_to_gen + "_logits.jsonl"
+    config_output = "data/" + args.prompts_to_gen + "_gen_cfg.json"
+
     # Override temperature for deterministic mode
     if args.deterministic:
         args.temperature = 0.0
@@ -232,11 +237,12 @@ def main():
     print(f"Loaded {len(conflict_prompts)} conflict prompts")
     
     # Determine if saving logits
-    save_logits = args.save_logits and not args.no_logits
-    if args.no_logits:
-        print("Logits saving disabled")
-    elif save_logits:
-        print(f"Logits will be saved to: {args.logits_output}")
+    save_logits = args.save_logits
+    if save_logits and not args.save_nothing:
+        print(f"Logits will be saved to: {logits_output}")
+    else:
+        save_logits = False
+        print("Logits will NOT be saved")
     
     # Generate samples
     all_samples = []
@@ -260,9 +266,6 @@ def main():
             logits_entry["prompt_id"] = prompt_id
         all_samples.extend(samples)
         all_logits.extend(logits_data)
-        output_filename = "exp_gens.jsonl"
-        logits_filename = "exp_logits.jsonl"
-        config_filename = "exp_gen_cfg.json"
     else:
         for prompt in conflict_prompts:
             print(f"Generating samples for {prompt['id']}: {prompt['text'][:50]}...")
@@ -285,18 +288,18 @@ def main():
             
             all_samples.extend(samples)
             all_logits.extend(logits_data)
-        output_filename = "gens.jsonl"
-        logits_filename = "logits.jsonl"
-        config_filename = "gen_cfg.json"
     
     # Save samples
-    output_path = Path(f"data/{output_filename}")
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    write_jsonl(output_path, all_samples)
+    if args.save_nothing:
+        print("Not saving any outputs as per --save_nothing flag.")
+    else:
+        output_path = Path(responses_output)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        write_jsonl(output_path, all_samples)
     
     # Save logits if any were collected
     if all_logits:
-        logits_path = Path(f"data/{logits_filename}")
+        logits_path = Path(logits_output)
         logits_path.parent.mkdir(parents=True, exist_ok=True)
         write_jsonl(logits_path, all_logits)
         print(f"Saved {len(all_logits)} logits entries to: {logits_path}")
@@ -325,10 +328,13 @@ def main():
         "seed_policy": "base_seed + sample_idx for reproducibility"
     }
     
-    config_path = Path(f"data/{config_filename}")
-    config_path.parent.mkdir(parents=True, exist_ok=True)
-    with config_path.open("w") as f:
-        json.dump(config, f, indent=2)
+    if args.save_nothing:
+        print("Not saving config as per --save_nothing flag.")
+    else:
+        config_path = Path(config_output)
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        with config_path.open("w") as f:
+            json.dump(config, f, indent=2)
     
     # Print summary
     print(f"\n📊 Generation Summary:")

@@ -20,15 +20,15 @@ definitions:
     - id: 3
       name: Type-3 Pick-one
       rule: >
-        Satisfies one constraint, violates the other (no explicit acknowledgement).
+        Satisfies one constraint, violates the other.
     - id: 4
       name: Type-4 Mix/compromise
       rule: >
-        Attempts to satisfy both by mixing the constraints; yields an incoherent hybrid.
+        Attempts to satisfy both by mixing the constraints in a single answer; yields an incoherent hybrid.
     - id: 5
       name: Type-5 Multiple outputs
       rule: >
-        Produces one answer per mutually exclusive constraint (when a single answer was required).
+        Produces one answer per mutually exclusive constraint.
     - id: 6
       name: Type-6 Normal Behavior
       rule: >
@@ -40,8 +40,8 @@ definitions:
 
   aggregates:
     MIX: [4]                 # primary target to reduce
-    SINGLE_POLICY: [3, 2]    # coherent single-policy outcomes (Type-3; include 2 if it occurs)
-    OTHER: [1,5,6,7]         # reported but not optimized
+    SINGLE_POLICY: [3]    # coherent single-policy outcomes (Type-3; include 2 if it occurs)
+    OTHER: [1,2,5,6,7]         # reported but not optimized
 
 model:
   name: Llama-3.1-8B-Instruct
@@ -172,7 +172,7 @@ steps:
   - id: 3-label
     title: Label Development Set outputs into Types 1..7 with strong judge + spot-check
     actions:
-      - Implement src/label.py to call a powerful judge via the Cursor agent; apply the rubric above.
+      - Implement src/label.py to call a powerful judge via the Openrouter API; apply the rubric above.
       - Systematically label all rows in data/dev_gens.jsonl.
       - Manual spot-check CLI to correct ~15% (random stratified).
       - Produce aggregate labels per sample: MIX / SINGLE_POLICY / OTHER.

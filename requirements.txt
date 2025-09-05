@@ -9,3 +9,5 @@ tqdm
 matplotlib
 pytest
 huggingface-hub
+openai
+dotenv
