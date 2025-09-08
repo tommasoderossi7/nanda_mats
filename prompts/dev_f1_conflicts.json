@@ -14,7 +14,7 @@
     {
         "id": "F1_CONF_03",
         "family": "F1_formatting",
-        "text": "List the seven wonders as a CSV, but do not use any commas.",
+        "text": "List the seven wonders as comma separated values, but do not use any commas.",
         "sibling_id": "F1_NCONF_03"
     },
     {
