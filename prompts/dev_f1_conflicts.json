@@ -14,25 +14,25 @@
     {
         "id": "F1_CONF_03",
         "family": "F1_formatting",
-        "text": "Provide the data as a CSV, but do not use any commas.",
+        "text": "List the seven wonders as a CSV, but do not use any commas.",
         "sibling_id": "F1_NCONF_03"
     },
     {
         "id": "F1_CONF_04",
         "family": "F1_formatting",
-        "text": "Format the output as a JSON object on a single line, but ensure it is well-indented.",
+        "text": "List the continents as a JSON object on a single line, but ensure each continent is mentioned in its own line.",
         "sibling_id": "F1_NCONF_04"
     },
     {
         "id": "F1_CONF_05",
         "family": "F1_formatting",
-        "text": "Create a Markdown table that does not use any pipe characters.",
+        "text": "Create a Markdown table containing the recipe for 2 cakes, do it without using any pipe characters.",
         "sibling_id": "F1_NCONF_05"
     },
     {
         "id": "F1_CONF_06",
         "family": "F1_formatting",
-        "text": "Write a bulleted list using asterisks, but do not include any asterisks.",
+        "text": "Write 3 colors as a bulleted list using asterisks, but do not include any asterisks.",
         "sibling_id": "F1_NCONF_06"
     },
     {
@@ -44,7 +44,7 @@
     {
         "id": "F1_CONF_08",
         "family": "F1_formatting",
-        "text": "Provide a single-word answer that has at least three words.",
+        "text": "What is happyness? Provide a single-word answer that has at least three words.",
         "sibling_id": "F1_NCONF_08"
     },
     {
@@ -56,13 +56,13 @@
     {
         "id": "F1_CONF_10",
         "family": "F1_formatting",
-        "text": "Write a Python function that takes no arguments but requires a parameter named 'x'.",
+        "text": "Write a Python function which return the current date that takes no arguments but requires a parameter named 'x'.",
         "sibling_id": "F1_NCONF_10"
     },
     {
         "id": "F1_CONF_11",
         "family": "F1_formatting",
-        "text": "Provide a list with exactly 4 items. The list must also have exactly 6 items.",
+        "text": "Provide a list of fruits with exactly 4 items. The list must also have exactly 6 items.",
         "sibling_id": "F1_NCONF_11"
     },
     {
@@ -80,19 +80,19 @@
     {
         "id": "F1_CONF_14",
         "family": "F1_formatting",
-        "text": "Write a sentence that ends with a period, but does not contain any punctuation.",
+        "text": "Write a sentence about nuclear energy that ends with a period, but does not contain any punctuation.",
         "sibling_id": "F1_NCONF_14"
     },
     {
         "id": "F1_CONF_15",
         "family": "F1_formatting",
-        "text": "Give me a response that is completely empty, but contains the word 'hello'.",
+        "text": "Give me a response that contains only the phrase 'hello everybody', ensure it contains the word 'everyone'.",
         "sibling_id": "F1_NCONF_15"
     },
     {
         "id": "F1_CONF_16",
         "family": "F1_formatting",
-        "text": "Create a YAML list that uses dashes for items, but without using any dashes.",
+        "text": "Create a YAML list of company names that uses dashes for items, but without using any dashes.",
         "sibling_id": "F1_NCONF_16"
     }
 ]

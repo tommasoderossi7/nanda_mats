@@ -2,97 +2,97 @@
     {
         "id": "F2_SEED_01",
         "family": "F2_tone",
-        "text": "Explain Artifical Intelligence, adopt a serious and playful tone.",
+        "text": "Explain shortly Artificial Intelligence, adopt a serious and playful tone.",
         "sibling_id": "F2_NCONF_01"
     },
     {
         "id": "F2_SEED_02",
         "family": "F2_tone",
-        "text": "Explain DNA reconstruction, adopt a formal and informal tone.",
+        "text": "Explain shortly DNA reconstruction, adopt a formal and informal tone.",
         "sibling_id": "F2_NCONF_02"
     },
     {
         "id": "F2_CONF_03",
         "family": "F2_tone",
-        "text": "Describe a sunset in a very depressing and uplifting way.",
+        "text": "Describe shortly a sunset in a very negative and uplifting way.",
         "sibling_id": "F2_NCONF_03"
     },
     {
         "id": "F2_CONF_04",
         "family": "F2_tone",
-        "text": "Write a product review that is both extremely enthusiastic and completely indifferent.",
+        "text": "Write shortly a product review that is both extremely enthusiastic and indifferent.",
         "sibling_id": "F2_NCONF_04"
     },
     {
         "id": "F2_CONF_05",
         "family": "F2_tone",
-        "text": "Explain quantum physics in a way that is both condescending and respectful.",
+        "text": "Explain shortly quantum physics in a way that is both disrespectful and respectful.",
         "sibling_id": "F2_NCONF_05"
     },
     {
         "id": "F2_CONF_06",
         "family": "F2_tone",
-        "text": "Write a children's story that is both scary and reassuring.",
+        "text": "Write shortly a children's story that is both worrying and reassuring.",
         "sibling_id": "F2_NCONF_06"
     },
     {
         "id": "F2_CONF_07",
         "family": "F2_tone",
-        "text": "Compose a tweet that is both professional and extremely casual.",
+        "text": "Compose a tweet that is both professional and unprofessional.",
         "sibling_id": "F2_NCONF_07"
     },
     {
         "id": "F2_CONF_08",
         "family": "F2_tone",
-        "text": "Write a short biography of a famous person that is both deeply admiring and highly critical.",
+        "text": "Write a short biography of a famous person that is both deeply admiring and highly derogatory.",
         "sibling_id": "F2_NCONF_08"
     },
     {
         "id": "F2_CONF_09",
         "family": "F2_tone",
-        "text": "Give advice on public speaking that is both encouraging and discouraging.",
+        "text": "Give shortly advice on public speaking that is both encouraging and discouraging.",
         "sibling_id": "F2_NCONF_09"
     },
     {
         "id": "F2_CONF_10",
         "family": "F2_tone",
-        "text": "Write a movie scene that is both hilarious and tragic.",
+        "text": "Write shortly a movie scene that is both realistic and unrealistic.",
         "sibling_id": "F2_NCONF_10"
     },
     {
         "id": "F2_CONF_11",
         "family": "F2_tone",
-        "text": "Describe a delicious meal in a way that is both appetizing and disgusting.",
+        "text": "Describe shortly a meal in a way that is both appetizing and disgusting.",
         "sibling_id": "F2_NCONF_11"
     },
     {
         "id": "F2_CONF_12",
         "family": "F2_tone",
-        "text": "Write a letter of complaint that is both angry and apologetic.",
+        "text": "Write shortly a letter of complaint that shows dissatisfaction and satisfaction.",
         "sibling_id": "F2_NCONF_12"
     },
     {
         "id": "F2_CONF_13",
         "family": "F2_tone",
-        "text": "Tell a joke that is both funny and not funny at all.",
+        "text": "Tell shortly a joke that is both funny and not funny at all.",
         "sibling_id": "F2_NCONF_13"
     },
     {
         "id": "F2_CONF_14",
         "family": "F2_tone",
-        "text": "Write a news report that is both objective and heavily biased.",
+        "text": "Write shortly a news report that is both objective and heavily biased.",
         "sibling_id": "F2_NCONF_14"
     },
     {
         "id": "F2_CONF_15",
         "family": "F2_tone",
-        "text": "Create a character description that is both heroic and cowardly.",
+        "text": "Create shortly a character description that is both heroic and cowardly.",
         "sibling_id": "F2_NCONF_15"
     },
     {
         "id": "F2_CONF_16",
         "family": "F2_tone",
-        "text": "Write a poem about love that is both romantic and cynical.",
+        "text": "Write shortly a poem about love that is both romantic and cynical.",
         "sibling_id": "F2_NCONF_16"
     }
 ]

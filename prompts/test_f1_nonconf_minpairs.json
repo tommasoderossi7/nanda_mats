@@ -34,41 +34,5 @@
         "family": "F1_formatting",
         "text": "Provide a response in exactly 50 words that contains approximately 50 words.",
         "sibling_id": "F1_TEST_06"
-    },
-    {
-        "id": "F2_TEST_NCONF_01",
-        "family": "F2_tone",
-        "text": "Describe a vacation experience that is both relaxing and peaceful.",
-        "sibling_id": "F2_TEST_01"
-    },
-    {
-        "id": "F2_TEST_NCONF_02",
-        "family": "F2_tone",
-        "text": "Write a job application cover letter that is both confident and professional.",
-        "sibling_id": "F2_TEST_02"
-    },
-    {
-        "id": "F2_TEST_NCONF_03",
-        "family": "F2_tone",
-        "text": "Explain climate change in a way that is both urgent and compelling.",
-        "sibling_id": "F2_TEST_03"
-    },
-    {
-        "id": "F2_TEST_NCONF_04",
-        "family": "F2_tone",
-        "text": "Write a restaurant menu description that is both appetizing and enticing.",
-        "sibling_id": "F2_TEST_04"
-    },
-    {
-        "id": "F2_TEST_NCONF_05",
-        "family": "F2_tone",
-        "text": "Create a social media post that is both trendy and current.",
-        "sibling_id": "F2_TEST_05"
-    },
-    {
-        "id": "F2_TEST_NCONF_06",
-        "family": "F2_tone",
-        "text": "Write a product manual that is both technical and comprehensive.",
-        "sibling_id": "F2_TEST_06"
     }
 ]

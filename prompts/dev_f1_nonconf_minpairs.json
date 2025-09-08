@@ -14,25 +14,25 @@
     {
         "id": "F1_NCONF_03",
         "family": "F1_formatting",
-        "text": "Provide the data as a CSV, but do not use any semicolons.",
+        "text": "List the seven wonders as a CSV, but do not use any semicolons.",
         "sibling_id": "F1_CONF_03"
     },
     {
         "id": "F1_NCONF_04",
         "family": "F1_formatting",
-        "text": "Format the output as a JSON object on a single line, and ensure it has no indentation.",
+        "text": "List the continents as a JSON object on a single line, but ensure each continent is mentioned in its own field.",
         "sibling_id": "F1_CONF_04"
     },
     {
         "id": "F1_NCONF_05",
         "family": "F1_formatting",
-        "text": "Create a Markdown table that does not use any backticks.",
+        "text":  "Create a Markdown table containing the recipe for 2 cakes, do it without using any backticks characters.",
         "sibling_id": "F1_CONF_05"
     },
     {
         "id": "F1_NCONF_06",
         "family": "F1_formatting",
-        "text": "Write a bulleted list using asterisks, but do not include any hyphens.",
+        "text": "Write 3 colors as a bulleted list using asterisks, but do not include any hyphens.",
         "sibling_id": "F1_CONF_06"
     },
     {
@@ -44,7 +44,7 @@
     {
         "id": "F1_NCONF_08",
         "family": "F1_formatting",
-        "text": "Provide a single-word answer that has at least one word.",
+        "text": "What is happyness? Provide a single-word answer that has at least one word.",
         "sibling_id": "F1_CONF_08"
     },
     {
@@ -56,13 +56,13 @@
     {
         "id": "F1_NCONF_10",
         "family": "F1_formatting",
-        "text": "Write a Python function that takes one argument named 'x'.",
+        "text": "Write a Python function which return the current date that takes one argument named 'x'.",
         "sibling_id": "F1_CONF_10"
     },
     {
         "id": "F1_NCONF_11",
         "family": "F1_formatting",
-        "text": "Provide a list with exactly 4 items. The list must also have at least 2 items.",
+        "text": "Provide a list of fruits with exactly 4 items. The list must also have at least 2 items.",
         "sibling_id": "F1_CONF_11"
     },
     {
@@ -80,19 +80,19 @@
     {
         "id": "F1_NCONF_14",
         "family": "F1_formatting",
-        "text": "Write a sentence that ends with a period, but does not contain any commas.",
+        "text": "Write a sentence about nuclear energy that ends with a period, but does not contain any commas.",
         "sibling_id": "F1_CONF_14"
     },
     {
         "id": "F1_NCONF_15",
         "family": "F1_formatting",
-        "text": "Give me a response that is almost empty, but contains the word 'hello'.",
+        "text": "Give me a response that contains only the phrase 'hello everybody', ensure it contains the word 'everybody'.",
         "sibling_id": "F1_CONF_15"
     },
     {
         "id": "F1_NCONF_16",
         "family": "F1_formatting",
-        "text": "Create a YAML list that uses dashes for items, but without using any underscores.",
+        "text": "Create a YAML list of company names that uses dashes for items, but without using any underscores.",
         "sibling_id": "F1_CONF_16"
     }
 ]
