@@ -1,0 +1,52 @@
+[
+    {
+        "id": "BENIGN_01",
+        "family": "benign",
+        "text": "What is the capital of France?"
+    },
+    {
+        "id": "BENIGN_02",
+        "family": "benign",
+        "text": "List three fruits."
+    },
+    {
+        "id": "BENIGN_03",
+        "family": "benign",
+        "text": "Provide the first 5 prime numbers."
+    },
+    {
+        "id": "BENIGN_04",
+        "family": "benign",
+        "text": "Write a sentence about a cat."
+    },
+    {
+        "id": "BENIGN_05",
+        "family": "benign",
+        "text": "Format the words 'apple', 'banana', 'cherry' as a comma-separated list."
+    },
+    {
+        "id": "BENIGN_06",
+        "family": "benign",
+        "text": "Who wrote 'Hamlet'?"
+    },
+    {
+        "id": "BENIGN_07",
+        "family": "benign",
+        "text": "What is 2 + 2?"
+    },
+    {
+        "id": "BENIGN_08",
+        "family": "benign",
+        "text": "Write a short description of a sunny day."
+    },
+    {
+        "id": "BENIGN_09",
+        "family": "benign",
+        "text": "List the days of the week."
+    },
+    {
+        "id": "BENIGN_10",
+        "family": "benign",
+        "text": "What is the main purpose of a web browser?"
+    }
+] 

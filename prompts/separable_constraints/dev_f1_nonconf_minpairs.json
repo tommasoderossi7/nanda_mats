@@ -1,0 +1,74 @@
+[
+  {
+    "id": "F1_NCONF_01",
+    "family": "F1_formatting",
+    "text": "Output exactly 8 animal names.\n<ConstraintA> one single comma-separated line ONLY.</ConstraintA>\n<ConstraintB> one single comma-separated line ONLY.</ConstraintB>\nBoth constraints are equally important. Produce exactly one output.",
+    "sibling_id": "F1_CNF_01"
+  },
+  {
+    "id": "F1_NCONF_02",
+    "family": "F1_formatting",
+    "text": "Return the same contact info.\n<ConstraintA> valid JSON ONLY.</ConstraintA>\n<ConstraintB> valid JSON ONLY.</ConstraintB>\nBoth constraints are equally important. Produce exactly one output.",
+    "sibling_id": "F1_CNF_02"
+  },
+  {
+    "id": "F1_NCONF_03",
+    "family": "F1_formatting",
+    "text": "Provide a bash one-liner to print $HOME.\n<ConstraintA> inside a single fenced code block ONLY.</ConstraintA>\n<ConstraintB> inline with one code block ONLY.</ConstraintB>\nBoth constraints are equally important. Produce exactly one output.",
+    "sibling_id": "F1_CNF_03"
+  },
+  {
+    "id": "F1_NCONF_04",
+    "family": "F1_formatting",
+    "text": "Write a short README title and one sentence.\n<ConstraintA> use Markdown heading \"# Title\" and bold keywords ONLY.</ConstraintA>\n<ConstraintB> use Markdown ONLY.</ConstraintB>\nBoth constraints are equally important. Produce exactly one output.",
+    "sibling_id": "F1_CNF_04"
+  },
+  {
+    "id": "F1_NCONF_05",
+    "family": "F1_formatting",
+    "text": "Return a simple toy JSON object with 5 config keys.\n<ConstraintA> all keys in snake_case ONLY.</ConstraintA>\n<ConstraintB> all keys in snake_case ONLY.</ConstraintB>\nBoth constraints are equally important. Produce exactly one output.",
+    "sibling_id": "F1_CNF_05"
+  },
+  {
+    "id": "F1_NCONF_06",
+    "family": "F1_formatting",
+    "text": "List 6 country–capital pairs.\n<ConstraintA> CSV with commas ONLY (single line).</ConstraintA>\n<ConstraintB> CSV with commas ONLY (single line).</ConstraintB>\nBoth constraints are equally important. Produce exactly one output.",
+    "sibling_id": "F1_CNF_06"
+  },
+  {
+    "id": "F1_NCONF_07",
+    "family": "F1_formatting",
+    "text": "Write a 6-word product slogan.\n<ConstraintA> ALL UPPERCASE ONLY.</ConstraintA>\n<ConstraintB> ALL UPPERCASE ONLY.</ConstraintB>\nBoth constraints are equally important. Produce exactly one output.",
+    "sibling_id": "F1_CNF_07"
+  },
+  {
+    "id": "F1_NCONF_08",
+    "family": "F1_formatting",
+    "text": "Produce a single-line CSV of 5 fruits.\n<ConstraintA> quote ALL fields ONLY.</ConstraintA>\n<ConstraintB> quote ALL fields ONLY.</ConstraintB>\nBoth constraints are equally important. Produce exactly one output.",
+    "sibling_id": "F1_CNF_08"
+  },
+  {
+    "id": "F1_NCONF_09",
+    "family": "F1_formatting",
+    "text": "Show a path to the downloads folder.\n<ConstraintA> Windows-style backslashes ONLY.</ConstraintA>\n<ConstraintB> Windows-style backslashes ONLY.</ConstraintB>\nBoth constraints are equally important. Produce exactly one output.",
+    "sibling_id": "F1_CNF_09"
+  },
+  {
+    "id": "F1_NCONF_10",
+    "family": "F1_formatting",
+    "text": "One-sentence definition of photosynthesis.\n<ConstraintA> English ONLY.</ConstraintA>\n<ConstraintB> English ONLY.</ConstraintB>\nBoth constraints are equally important. Produce exactly one output.",
+    "sibling_id": "F1_CNF_10"
+  },
+  {
+    "id": "F1_NCONF_11",
+    "family": "F1_formatting",
+    "text": "Provide today's date.\n<ConstraintA> ISO-8601 ONLY.</ConstraintA>\n<ConstraintB> ISO-8601 ONLY.</ConstraintB>\nBoth constraints are equally important. Produce exactly one output.",
+    "sibling_id": "F1_CNF_11"
+  },
+  {
+    "id": "F1_NCONF_12",
+    "family": "F1_formatting",
+    "text": "State a car speed of 100 in units.\n<ConstraintA> km/h ONLY.</ConstraintA>\n<ConstraintB> km/h ONLY.</ConstraintB>\nBoth constraints are equally important. Produce exactly one output.",
+    "sibling_id": "F1_CNF_12"
+  }
+]

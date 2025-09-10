@@ -295,14 +295,14 @@ def load_conflict_prompts(
     prompts_split: str = "dev",
 ) -> List[Dict]:
     """Load conflict prompts from JSON files with optional filtering."""
-    prompts_dir = Path("prompts")
+    prompts_dir = Path("prompts/separable_constraints")
     all_prompts = []
 
     if prompts_split == "dev":
         prompt_files = {
             "f1": ["dev_f1_conflicts.json", "dev_f1_nonconf_minpairs.json"],
-            "f2": ["dev_f2_conflicts.json", "dev_f2_nonconf_minpairs.json"],
-            "benign": ["dev_benign.json"],
+            #"f2": ["dev_f2_conflicts.json", "dev_f2_nonconf_minpairs.json"],
+            #"benign": ["dev_benign.json"],
         }
     else:  # test
         prompt_files = {
@@ -502,6 +502,7 @@ def main():
     parser.add_argument("--conflict_family", help="Comma-separated list of conflict families to run (e.g., f1,f2)")
     parser.add_argument("--prompts_to_run", help="Comma-separated list of specific prompt IDs to run (e.g., f1_002_nonconf,f2_001)")
     parser.add_argument("--prompt_string", type=str, help="A custom prompt string to generate samples for")
+    #parser.add_argument("--prompts_type", type=str, help="Whether to use separable constraints prompt or not", choices=["separable", "nonseparable"], default="separable")
 
     # New flags
     parser.add_argument("--no_progress_bar", action="store_true", help="Disable tqdm progress bars")

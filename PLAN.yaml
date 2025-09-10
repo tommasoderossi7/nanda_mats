@@ -1,10 +1,9 @@
-project: Wait a Second... - Steering Away from Mixing Under Instruction Conflicts
+project: Wait a Second... - Steering Away from Arbitrary Prioritization Under Instruction Conflicts
 author: Tommaso Derossi
 goal: >
-  Reduce Type-4 "mix/compromise" behavior (MIX) on conflicting-instruction prompts via a single
+  Reduce Type-3 "Pick-one" behavior (MIX) on conflicting-instruction prompts via a single
   activation-space direction while keeping benign drift small; demonstrate cross-conflict transfer
-  (formatting ↔ tone). Report the negative result on Type-2 scarcity for 7–8B models and include a small
-  mechanistic "Conflict-Head Atlas".
+  (formatting ↔ tone). Report the negative result on Type-2 scarcity for 7–8B models.
 
 definitions:
   response_types:
@@ -40,8 +39,9 @@ definitions:
 
   aggregates:
     MIX: [4]                 # primary target to reduce
-    SINGLE_POLICY: [3]    # coherent single-policy outcomes (Type-3; include 2 if it occurs)
-    OTHER: [1,2,5,6,7]         # reported but not optimized
+    PRIORITIZE: [3]    # coherent single-policy outcomes (Type-3; include 2 if it occurs)
+    MULTI: [5]       # multiple distinct outputs
+    OTHER: [1,2,6,7]         # reported but not optimized
 
 model:
   name: Llama-3.1-8B-Instruct
@@ -287,37 +287,36 @@ steps:
       - "The number of activation vectors (num_samples) in each saved array exactly matches the number of samples in the conflict_train set (i.e., len(conflict_train_prompts) * 10)."
       - "The metadata file correctly aligns the data."
 
-  - id: 5-vector-anti-mix-across
-    title: Build anti-mix direction v* via candidate grid + Fisher preconditioning + validation selection
+  - id: 5-vector-multi-across
+    title: Build multi answers direction (Type-5) v* via candidate grid + validation selection
     actions:
       - Define post-instruction positions I from the chat template (all tokens after the instruction).
       - Candidate set: (layer l ∈ {mid_index, late_index}) × (position i ∈ I).
       - For each candidate (l,i):
         * Within each conflict prompt p ∈ conflict_train:
-          Δ_{l,i}(p) = mean(h_{l,i} | SINGLE_POLICY) – mean(h_{l,i} | MIX).
-        * Average over prompts (and optionally i±1) → Δ̄_{l,i}.
-        * Candidate vector: v_{l,i} = Δ̄_{l,i} / ||Δ̄_{l,i}|| (unit norm).
-      - Validation selection (greedy decoding for stability):
-        * For each v_{l,i}, evaluate addition at layer l under two modes:
-            (M1) token-local addition at t=1..3 (decay 1.0, 0.7, 0.5)
-            (M2) layer-wide addition across all post-instruction positions i∈I
-        * For α ∈ {0.2, 0.4}, record on conflict_validation: ΔMIX (↓ desired), ΔSINGLE_POLICY (report).
+          Δ_{l,i}(p) = mean(h_{l,i} | Type-5) – mean(h_{l,i} | ¬ Type-5).
+        * Average over prompts to obtain Δ_{l,i}.
+        * Candidate vector direction: v_{l,i} = Δ_{l,i} / ||Δ_{l,i}|| (unit norm).
+        * Candidate vector magnitude: ||Δ_{l,i}||.
+      - Validation selection:
+        * For each v_{l,i}, evaluate layer-wide addition at layer l across all post-instruction positions i∈I
+        * For α ∈ {0.2, 0.4}, record on conflict_validation: ΔType-5 (↑ desired), Δ¬Type-5 (↓ desired).
         * On controls_gold: mean KL (first 3 tokens) and Top-10 overlap.
         * Selection score:
-            J_anti_mix = (-ΔMIX_validation) - λ2 · mean_KL_controls   (λ2 = 1.0)
-        * Pick best (l*, i*, mode*) at α*=0.4 maximizing J_anti_mix.
+            J_multi = (-Δ¬Type-5_validation) - λ2 · mean_KL_controls   (λ2 = 1.0)
+        * Pick best (l*, i*) at α*=0.4 maximizing J_multi.
       - Necessity/sufficiency sanity (greedy decoding):
-        * Addition along v* decreases MIX on validation conflicts.
-        * Directional ablation at l* increases MIX (necessity).
-      - Freeze v* (unit norm), l*, mode*.
+        * Addition along v* decreases ¬Type-5 on validation conflicts.
+        * Directional ablation at l* increases ¬Type-5 (necessity).
+      - Freeze v* (unit norm), l*.
     deliverables:
-      - artifacts/v_star_across.npz (vector, layer l*, pos i*, mode*, Σ stats, α*=0.4)
-      - artifacts/selection_table_across.json (per-candidate: ΔMIX, ΔSINGLE_POLICY, KL_controls, Top-10, J_anti_mix, mode)
+      - artifacts/v_star_across.npz (vector, layer l*, pos i*, α*=0.4)
+      - artifacts/selection_table_across.json (per-candidate: ΔType-5, Δ¬Type-5, KL_controls, Top-10, J_multi)
       - artifacts/necessity_sufficiency_across.json
     acceptance:
-      - Linear-probe AUC (SINGLE_POLICY vs MIX) at chosen site ≥ 0.75 (bootstrap CI reported).
-      - Addition ↓MIX and ablation ↑MIX confirmed on validation.
-      - Selection table shows the winner and J_anti_mix breakdown.
+      - Linear-probe AUC (Type-5 vs ¬Type-5) at chosen site ≥ 0.75 (bootstrap CI reported).
+      - Addition ↑Type-5 and ablation ↓Type-5 confirmed on validation.
+      - Selection table shows the winner and J_multi breakdown.
 
   - id: 5a-vector-creation-and-generation-within
     title: "Build Candidate Vectors and Generate All Validation Responses"
