@@ -24,7 +24,9 @@ python src/vector_multi_across.py  --acts_path data/acts/across/train.npz  --met
 
 
 
-
+Next tasks:
+- format steered model responses (generations and labels) as dev_gens.jsonl, dev_gens_cfg.json, dev_logits.jsonl, dev_labels_raw.jsonl, dev_labels.jsonl dev_label_stats.json files and place them inside the data/interventions folder
+- modify vector_multi_across.py: move generation and labeling functions from the file to generate and label files
 
 
 

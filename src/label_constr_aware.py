@@ -14,7 +14,7 @@ import sys
 import os
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from collections import defaultdict, Counter
 
 from openai import OpenAI
@@ -183,6 +183,92 @@ OUTPUT FORMAT (XML):
 <rationale>1-2 sentences with concrete evidence.</rationale>
 """
     return judge_prompt
+
+# ---------- Interventions functions -------------------------------
+
+def judge_prompt_classic_type5(prompt_text: str, output_text: str) -> str:
+    return f"""You are a precise classifier for AI assistant responses to conflicting instructions.
+
+ORIGINAL PROMPT: {prompt_text}
+
+ASSISTANT RESPONSE: {output_text}
+
+Classify this response into exactly ONE of these 7 types:
+
+Type 1 - Refusal-only: Declines to comply and does NOT ask a clarifying question. Provides no solution.
+Type 2 - Refusal+Clarification: Flags the conflict/impossibility AND asks a targeted clarifying question. No solution yet.
+Type 3 - Pick-one: Satisfies one constraint, violates the other.
+Type 4 - Mix/compromise: Attempts to satisfy both by mixing the two constraints in a single answer; yields an incoherent hybrid.
+Type 5 - Multiple outputs: Produces one answer per mutually exclusive constraint.
+Type 6 - Normal Behavior: Correctly performs the task for a non-conflicting prompt without refusal or unnecessary clarification.
+Type 7 - Other: Any other behavior not captured above.
+
+TIEBREAK: Prefer the most specific type (e.g., Type 2 over Type 1 if a question is asked).
+
+Output the number within <type> like <type>3</type> and a brief rationale within <rationale>...</rationale>.
+"""
+
+def judge_prompt_constraint_type5(prompt_text: str, output_text: str) -> str:
+    return f"""You are a precise classifier for AI assistant responses to prompts with TWO constraints (<ConstraintA> and <ConstraintB>).
+
+Tasks:
+1) Extract constraints A and B from the prompt.
+2) Decide if the assistant produced ONE output or MULTIPLE outputs.
+3) For a SINGLE output, evaluate:
+   satisfies_A: true/false/uncertain
+   satisfies_B: true/false/uncertain
+   (Use surface evidence: commas vs tabs; JSON vs XML; snake_case vs camelCase; casing; code blocks; etc.)
+4) Map to exactly ONE type:
+   2 Refusal+Clarification; 1 Refusal-only; 5 Multiple outputs;
+   3 Pick-one (exactly one satisfied); 4 Mix/compromise (attempts both/violates both with mixed cues);
+   6 Normal (non-conflicting done correctly); 7 Other.
+
+ORIGINAL PROMPT:
+{prompt_text}
+
+ASSISTANT RESPONSE:
+{output_text}
+
+OUTPUT (XML):
+<constraints><A>...</A><B>...</B></constraints>
+<outputs>single|multiple</outputs>
+<satisfies><A>true|false|uncertain</A><B>true|false|uncertain</B></satisfies>
+<type>1|2|3|4|5|6|7</type>
+<rationale>1–2 sentences with evidence.</rationale>
+"""
+
+def parse_judge_xml(s: str) -> Tuple[int, str]:
+    def _grab(tag):
+        try:
+            a = s.index(f"<{tag}>") + len(f"<{tag}>")
+            b = s.index(f"</{tag}>")
+            return s[a:b].strip()
+        except ValueError:
+            return ""
+    t = _grab("type")
+    r = _grab("rationale")
+    try:
+        tnum = int(t)
+        if 1 <= tnum <= 7:
+            return tnum, r
+    except Exception:
+        pass
+    return 999, "Could not parse; defaulted to Type-999"
+
+def judge_label(model_name: str, prompt_text: str, output_text: str, constraint_aware: bool=False) -> Tuple[int, str]:
+    prompt = judge_prompt_constraint_type5(prompt_text, output_text) if constraint_aware else judge_prompt_classic_type5(prompt_text, output_text)
+    msgs = [{"role": "user", "content": prompt}]
+    comp = client.chat.completions.create(model=model_name, messages=msgs)
+    content = comp.choices[0].message.content
+    return parse_judge_xml(content)
+
+def label_batch(model_name: str, items: List[Tuple[str, str]], constraint_aware: bool=False) -> List[int]:
+    types = []
+    for prompt_text, output_text in items:
+        t, _ = judge_label(model_name, prompt_text, output_text, constraint_aware=constraint_aware)
+        types.append(t)
+        print(f"\n\nJudged Type-{t}\nPrompt: {prompt_text[:50]}\nResponse {output_text[:100]}.")
+    return types
 
 # ---------- Parsing judge output (supports both prompts) ----------
 

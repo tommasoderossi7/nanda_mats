@@ -11,3 +11,5 @@ pytest
 huggingface-hub
 openai
 dotenv
+ipykernel
+ipywidgets

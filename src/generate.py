@@ -22,7 +22,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.utils import set_global_seed, write_jsonl  # kept for compatibility, not used here
+from src.utils import set_global_seed
 
 # ---- tqdm (optional) ---------------------------------------------------------
 try:
@@ -97,6 +97,200 @@ class PerfTracker:
             print("  {sec:<22} {cnt:>6}  {tot:>10.3f}  {avg:>10.3f}  {pct:>6.1f}%".format(
                 sec=row["section"], cnt=row["count"], tot=row["total_s"], avg=row["avg_s"], pct=row["pct"]))
         return s
+    
+# ---- Interventions helpers ---------------------------------------------------
+
+def load_model(model_path: str, device: str = "auto"):
+    tok = AutoTokenizer.from_pretrained(model_path)
+    mdl = AutoModelForCausalLM.from_pretrained(
+        model_path,
+        torch_dtype=torch.bfloat16,
+        device_map=device,
+        trust_remote_code=True
+    )
+    mdl.eval()
+    return mdl, tok
+
+def build_formatted_prompt(tokenizer, user_text: str) -> str:
+    if hasattr(tokenizer, "apply_chat_template") and tokenizer.chat_template:
+        msgs = [{"role": "user", "content": user_text}]
+        return tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+    return f"<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n{user_text}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+
+def greedy_with_intervention(
+    model, tokenizer, user_text: str,
+    layer_index: int,
+    add_vec: np.ndarray = None,
+    ablate_vec: np.ndarray = None,
+    alpha: float = 0.0,
+    max_new_tokens: int = 128,
+    take_logits_first5: bool = True,
+) -> Tuple[str, List[np.ndarray]]:
+    """
+    Greedy decode with optional intervention at a given layer after prefill.
+    Returns (decoded_text, logits_list_first5) as float32 numpy arrays (first 5 steps).
+    """
+    assert (add_vec is None) ^ (ablate_vec is None) or (add_vec is None and ablate_vec is None), \
+        "Specify either add_vec or ablate_vec or none."
+
+    device = next(model.parameters()).device
+    fmt = build_formatted_prompt(tokenizer, user_text)
+    input_ids = tokenizer.encode(fmt, return_tensors="pt").to(device)
+
+    # Prepare vectors (normalize) on device
+    v_add = v_abl = None
+    if add_vec is not None:
+        v_add = torch.from_numpy(add_vec.astype(np.float32)).to(device)
+        v_add = v_add / (torch.norm(v_add) + 1e-8)
+    if ablate_vec is not None:
+        v_abl = torch.from_numpy(ablate_vec.astype(np.float32)).to(device)
+        v_abl = v_abl / (torch.norm(v_abl) + 1e-8)
+
+    first5_logits: List[np.ndarray] = []
+
+    def hook_fn(module, inputs, output):
+        hs = output[0] if isinstance(output, tuple) else output
+        if hs.size(1) == 1:
+            if v_add is not None and alpha != 0.0:
+                v_cast = v_add.to(hs.dtype)
+                hs[:, -1, :] = hs[:, -1, :] + (hs.new_tensor(alpha) * v_cast)
+            elif v_abl is not None:
+                v_cast = v_abl.to(hs.dtype)
+                proj = torch.einsum("bd,d->b", hs[:, -1, :], v_cast)
+                hs[:, -1, :] = hs[:, -1, :] - proj.unsqueeze(-1) * v_cast
+        return hs
+
+    handle = model.model.layers[layer_index].register_forward_hook(hook_fn)
+
+    try:
+        # prefill
+        with torch.no_grad():
+            out = model(input_ids, use_cache=True)
+        past = out.past_key_values
+
+        generated = []
+        for step in range(max_new_tokens):
+            last_token = input_ids[:, -1:]
+            with torch.no_grad():
+                out = model(last_token, use_cache=True, past_key_values=past)
+            past = out.past_key_values
+
+            logits = out.logits[:, -1, :]  # [1, vocab]
+            if take_logits_first5 and step < 5:
+                first5_logits.append(
+                    logits.detach().to(dtype=torch.float32, device="cpu").numpy().squeeze(0)
+                )
+
+            next_id = torch.argmax(logits, dim=-1)
+            next_id_int = next_id.item()
+            generated.append(next_id_int)
+            input_ids = torch.cat([input_ids, next_id.unsqueeze(0)], dim=1)
+            if tokenizer.eos_token_id is not None and next_id_int == tokenizer.eos_token_id:
+                break
+
+        decoded = tokenizer.decode(generated, skip_special_tokens=True)
+        return decoded, first5_logits
+    finally:
+        handle.remove()
+
+# OK!
+def top_p_sample_from_logits(logits: torch.Tensor, temperature: float, top_p: float, gen: Optional[torch.Generator]=None) -> int:
+    logits = logits / max(temperature, 1e-8)
+    probs = torch.softmax(logits, dim=-1)
+    sorted_probs, sorted_idx = torch.sort(probs, descending=True)
+    cumsum = torch.cumsum(sorted_probs, dim=-1)
+    keep = cumsum <= top_p
+    if not torch.any(keep):
+        keep[0] = True
+    filtered = torch.zeros_like(probs)
+    filtered.scatter_(0, sorted_idx[keep], sorted_probs[keep])
+    filtered = filtered / (filtered.sum() + 1e-12)
+    if gen is None:
+        next_id = torch.multinomial(filtered, num_samples=1).item()
+    else:
+        next_id = torch.multinomial(filtered, num_samples=1, generator=gen).item()
+    return next_id
+
+# OK!
+def sample_with_intervention(
+    model, tokenizer, user_text: str,
+    layer_index: int,
+    add_vec: np.ndarray = None,
+    ablate_vec: np.ndarray = None,
+    alpha: float = 0.0,
+    temperature: float = 0.8,
+    top_p: float = 0.95,
+    max_new_tokens: int = 200,
+    take_logits_first5: bool = False,
+    seed: Optional[int] = None,
+) -> Tuple[str, List[np.ndarray]]:
+    """
+    Nucleus sampling (temp/top_p) with same intervention hook as greedy.
+    Returns (decoded_text, logits_list_first5) where logits_list_first5 are float32 numpy arrays.
+    """
+    assert (add_vec is None) ^ (ablate_vec is None) or (add_vec is None and ablate_vec is None), \
+        "Specify either add_vec or ablate_vec or none."
+
+    device = next(model.parameters()).device
+    fmt = build_formatted_prompt(tokenizer, user_text)
+    input_ids = tokenizer.encode(fmt, return_tensors="pt").to(device)
+
+    gen = None
+    if seed is not None:
+        gen = torch.Generator(device=device)
+        gen.manual_seed(int(seed))
+
+    v_add = v_abl = None
+    if add_vec is not None:
+        v_add = torch.from_numpy(add_vec.astype(np.float32)).to(device)
+        v_add = v_add / (torch.norm(v_add) + 1e-8)
+    if ablate_vec is not None:
+        v_abl = torch.from_numpy(ablate_vec.astype(np.float32)).to(device)
+        v_abl = v_abl / (torch.norm(v_abl) + 1e-8)
+
+    first5_logits: List[np.ndarray] = []
+
+    def hook_fn(module, inputs, output):
+        hs = output[0] if isinstance(output, tuple) else output
+        if hs.size(1) == 1:
+            if v_add is not None and alpha != 0.0:
+                v_cast = v_add.to(hs.dtype)
+                hs[:, -1, :] = hs[:, -1, :] + (hs.new_tensor(alpha) * v_cast)
+            elif v_abl is not None:
+                v_cast = v_abl.to(hs.dtype)
+                proj = torch.einsum("bd,d->b", hs[:, -1, :], v_cast)
+                hs[:, -1, :] = hs[:, -1, :] - proj.unsqueeze(-1) * v_cast
+        return hs
+
+    handle = model.model.layers[layer_index].register_forward_hook(hook_fn)
+
+    try:
+        with torch.no_grad():
+            out = model(input_ids, use_cache=True)
+        past = out.past_key_values
+
+        generated: List[int] = []
+        for step in range(max_new_tokens):
+            last_token = input_ids[:, -1:]
+            with torch.no_grad():
+                out = model(last_token, use_cache=True, past_key_values=past)
+            past = out.past_key_values
+            logits = out.logits[:, -1, :].squeeze(0)
+
+            if take_logits_first5 and step < 5:
+                first5_logits.append(logits.detach().to(dtype=torch.float32, device="cpu").numpy())
+
+            next_id = top_p_sample_from_logits(logits, temperature=temperature, top_p=top_p, gen=gen)
+            generated.append(next_id)
+            next_tensor = torch.tensor([[next_id]], device=device)
+            input_ids = torch.cat([input_ids, next_tensor], dim=1)
+            if tokenizer.eos_token_id is not None and next_id == tokenizer.eos_token_id:
+                break
+
+        decoded = tokenizer.decode(generated, skip_special_tokens=True)
+        return decoded, first5_logits
+    finally:
+        handle.remove()
 
 # ---- Core helpers ------------------------------------------------------------
 def load_model_and_tokenizer(

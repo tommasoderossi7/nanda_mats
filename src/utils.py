@@ -119,6 +119,29 @@ def top_k_overlap(p: np.ndarray, q: np.ndarray, k: int = 10) -> float:
 	idx_q = np.argsort(-q)[:k]
 	return float(len(set(idx_p.tolist()) & set(idx_q.tolist())) / k)
 
+def bootstrap_auc(scores_pos: np.ndarray, scores_neg: np.ndarray, B: int = 500, seed: int = 42) -> Tuple[float, Tuple[float, float]]:
+    """AUC via rank statistic with bootstrap CI."""
+    rng = np.random.default_rng(seed)
+    def auc_once(sp, sn):
+        npos, nneg = len(sp), len(sn)
+        pair = 0.0
+        ties = 0.0
+        for s in sp:
+            gt = (sn < s).sum()
+            eq = (sn == s).sum()
+            pair += gt
+            ties += eq
+        auc = (pair + 0.5 * ties) / (npos * nneg)
+        return float(auc)
+    auc_hat = auc_once(scores_pos, scores_neg)
+    aucs = []
+    for _ in range(B):
+        sp = rng.choice(scores_pos, size=len(scores_pos), replace=True)
+        sn = rng.choice(scores_neg, size=len(scores_neg), replace=True)
+        aucs.append(auc_once(sp, sn))
+    lo, hi = np.percentile(aucs, [2.5, 97.5])
+    return auc_hat, (float(lo), float(hi))
+
 
 def bootstrap_mean_confidence_interval(values: Sequence[float], num_bootstrap: int = 1000, alpha: float = 0.05, seed: int | None = 0) -> Tuple[float, float, float]:
 	"""

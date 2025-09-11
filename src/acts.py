@@ -175,7 +175,7 @@ def main():
     layer_map = depth_aware_indices(num_layers)
     print(f"Model depth={num_layers}; layer_map={layer_map}")
 
-    # Timesteps: first 3 assistant tokens
+    # Timesteps: first 5 assistant tokens
     timesteps = [1, 2, 3, 4, 5]
 
     # Load conflict_train IDs
