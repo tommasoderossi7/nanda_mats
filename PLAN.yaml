@@ -304,13 +304,13 @@ steps:
         * On controls_gold: mean KL (first 3 tokens) and Top-10 overlap.
         * Selection score:
             J_multi = (-Δ¬Type-5_validation) - λ2 · mean_KL_controls   (λ2 = 1.0)
-        * Pick best (l*, i*) at α*=0.4 maximizing J_multi.
+        * Pick best (l*, i*, α*) maximizing J_multi.
       - Necessity/sufficiency sanity (greedy decoding):
         * Addition along v* decreases ¬Type-5 on validation conflicts.
         * Directional ablation at l* increases ¬Type-5 (necessity).
       - Freeze v* (unit norm), l*.
     deliverables:
-      - artifacts/v_star_across.npz (vector, layer l*, pos i*, α*=0.4)
+      - artifacts/v_star_across.npz (vector, layer l*, pos i*, alpha α*)
       - artifacts/selection_table_across.json (per-candidate: ΔType-5, Δ¬Type-5, KL_controls, Top-10, J_multi)
       - artifacts/necessity_sufficiency_across.json
     acceptance:
@@ -318,139 +318,33 @@ steps:
       - Addition ↑Type-5 and ablation ↓Type-5 confirmed on validation.
       - Selection table shows the winner and J_multi breakdown.
 
-  - id: 5a-vector-creation-and-generation-within
-    title: "Build Candidate Vectors and Generate All Validation Responses"
-    actions:
-      - name: "Build Candidate Steering Vectors"
-        steps:
-          - "Identify high-entropy prompts (P_entropy) from data/splits_within/conflict_train.json (at least 3 MIX and 3 SINGLE_POLICY samples). Log the count."
-          - condition: "len(P_entropy) >= 5"
-            path: "Primary Path — Within-Prompt DoM"
-            steps:
-              - "For each candidate site (l,i), compute the Within-Prompt DoM vector v_{l,i} by first calculating Δ_p for each prompt in P_entropy and then averaging them."
-              - "Record that the 'Within-Prompt' method was used."
-          - condition: "len(P_entropy) < 5"
-            path: "Fallback Path — Across-Prompt DoM"
-            steps:
-              - "For each candidate site (l,i), compute the Across-Prompt DoM vector v_{l,i} by pooling all samples from conflict_train.json."
-              - "Record that the 'Across-Prompt' method was used."
-          - "Save all computed candidate vectors to a single file."
-      - name: "Generate Baseline and Steered Responses"
-        steps:
-          - name: "Baseline Generation (No Intervention)"
-            steps:
-              - "Generate 10 responses per prompt for data/splits_within/conflict_validation.json using greedy decoding. Save to data/gens/baseline_validation_greedy.jsonl."
-              - "Generate 10 responses per prompt for data/splits_within/controls_gold.json using greedy decoding. Save to data/gens/baseline_controls_greedy.jsonl."
-          - name: "Steered Generation Loop"
-            loops:
-              - "for each candidate vector v_{l,i}"
-              - "for each mode m in {M1, M2}"
-              - "for each strength α in {0.2, 0.4}"
-            steps:
-              - "Generate 10 responses per prompt for data/splits_within/conflict_validation.json under these steering settings. Save to data/gens/steered_val_l{l}_i{i}_m{m}_a{a}.jsonl."
-              - "Generate 10 responses per prompt for data/splits_within/controls_gold.json under the same settings. Save to data/gens/steered_controls_l{l}_i{i}_m{m}_a{a}.jsonl."
-    deliverables:
-      - path: "artifacts/within/candidate_vectors.npz"
-        desc: "A single file containing ALL computed candidate vectors, keyed by their layer and position."
-      - path: "artifacts/within/method_report.json"
-        desc: "Reports which method (Within-Prompt vs. Across-Prompt) was used and |P_entropy|."
-      - path: "data/gens/within/"
-        desc: "Baseline and all steered generation files for validation and controls."
-    acceptance:
-      - "artifacts/within/method_report.json is created and correctly identifies the path taken."
-      - "The number of generated files matches the number of candidates × modes × strengths tested."
-
-  - id: 5b-labeling-phase-within
-    title: "Label Steered Validation Responses"
-    actions:
-      - name: "Prepare Labeling Queue"
-        steps:
-          - "List all data/gens/within/steered_val_*.jsonl files produced in Step 5a."
-          - "Do NOT re-label data/gens/within/baseline_validation_greedy.jsonl; its labels already exist in data/dev_labels_corrected.jsonl."
-      - name: "Execute Labeling"
-        steps:
-          - "For each file in the queue, run the same LLM-judge + 15% manual spot-check pipeline used in Step 3."
-          - "Save labels to data/labels/labeled_steered_val_l{l}_i{i}_m{m}_a{a}.jsonl (one label file per steered input file)."
-    deliverables:
-      - path: "data/labels/within/"
-        desc: "One labeled_steered_val_*.jsonl per steered validation file."
-    acceptance:
-      - "Every data/gens/within/steered_val_*.jsonl has a corresponding file in data/labels/within/ with the same parameter signature."
-      - "Logs confirm the Step-3 labeling methodology (judge + spot-check) was reused."
-
-  - id: 5c-effect-measurement-and-selection-within
-    title: "Measure Intervention Effect and Select Final Vector"
-    actions:
-      - name: "Establish Baseline Metrics"
-        steps:
-          - "Load validation labels for the baseline (from data/dev_labels_corrected.jsonl corresponding to data/gens/baseline_validation_greedy.jsonl)."
-          - "Compute and store MIX_rate_baseline."
-      - name: "Analyze Steered Results"
-        steps:
-          - "Initialize an empty selection_table."
-          - "For each labeled file data/labels/labeled_steered_val_l{l}_i{i}_m{m}_a{a}.jsonl:"
-          - "Parse (l, i, mode, alpha) from the filename."
-          - "Compute MIX_rate_steered and SINGLE_POLICY_rate_steered."
-          - "Compute ΔMIX = MIX_rate_steered - MIX_rate_baseline and ΔSINGLE_POLICY."
-          - "Load matching steered controls (data/gens/steered_controls_l{l}_i{i}_m{m}_a{a}.jsonl) and baseline controls (data/gens/baseline_controls_greedy.jsonl)."
-          - "Compute drift metrics: mean_KL (first 3 tokens) and Top10_overlap."
-          - "Compute J_anti_mix = (-ΔMIX) - 1.0 * mean_KL."
-          - "Append a row with all metrics to selection_table."
-      - name: "Select Best Vector"
-        steps:
-          - "Filter selection_table to rows with alpha == 0.4."
-          - "Pick the row with max J_anti_mix; record winning (l*, i*, mode*)."
-      - name: "Finalize Deliverables"
-        steps:
-          - "Load artifacts/within/candidate_vectors.npz."
-          - "Extract the vector for (l*, i*); save single best vector to artifacts/within/v_star.npz with metadata {layer: l*, position: i*, mode: mode*, alpha: 0.4}."
-          - "Save selection_table to artifacts/within/selection_table.json."
-    deliverables:
-      - path: "artifacts/within/v_star.npz"
-        desc: "The single best-performing vector v* with its winning metadata."
-      - path: "artifacts/within/selection_table.json"
-        desc: "Detailed table of metrics for every candidate, used to make the final selection."
-    acceptance:
-      - "artifacts/within/selection_table.json is fully populated and saved."
-      - "The chosen v* corresponds to the entry with the highest J_anti_mix score at α = 0.4."
-      - "The winning candidate’s ΔMIX is negative (MIX reduction confirmed)."
-
-
   - id: 6-steer
     title: Final Evaluation on the held-out Final Test Set
     actions:
       - Unlock prompts/final_test_set.json and prompts/final_test_nonconf.json.
-      - Implement the selected mode from Step 5 (M1 or M2).
+      - Implement the selected direction from Step 5.
       - For α ∈ {0.2, 0.4, 0.8}:
         * Conflicts (final_test_set): sample with temperature=0.8.
         * Controls (final_test_nonconf): greedy decoding for KL/top-k.
-        * Label these outputs with the same strong judge + spot-check.
+        * Label these outputs with the same LLM-judge.
         * Metrics:
-          - Primary: Δ%MIX (↓ desired)
-          - Secondary: Δ%SINGLE_POLICY (↑ expected), Δ%OTHER (report)
+          - Primary: Δ¬Type-5 (↓ desired)
+          - Secondary: ΔType-5 (↑ expected)
           - mean KL (first 3 tokens) on controls; Top-10 overlap (k=10)
-          - Leave-one-family-out retained gain (train on F1, test on F2; and/or vice versa)
-      - Choose α† (default 0.4) maximizing (-ΔMIX) under drift constraints.
     deliverables:
       - data/steered_test_gens.jsonl (per α)
       - data/steered_test_labels.jsonl
       - artifacts/final_metrics.json
     acceptance:
       - At α†≈0.4:
-        * MIX reduced by ≥ 10–20 percentage points on conflicts
+        * ¬Type-5 reduced by ≥ 10–20 percentage points on conflicts
         * mean KL ≤ 0.2 nats; Top-10 overlap ≥ 0.9 on test controls
-        * Retained cross-family gain ≥ 50%
 
   - id: 7-baselines
     title: Baselines & ablations (including gated preamble baseline)
     actions:
       - Random direction (matched norm).
-      - Prompt baseline (GLOBAL preamble): “If constraints conflict, ask one clarifying question before proceeding.” (optional; expect high false positives on controls)
-      - Gated preamble baseline (optional):
-        * Train a simple conflict detector (linear probe at end-of-prompt on Dev minimal pairs).
-        * Gate a one-line clarifier only when the score > τ.
-      - Refusal-direction baseline (optional, only if available from prior work/models).
-      - Run all baselines on the Final Test Set.
+      - Run random steering direction on the Final Test Set and measure the effects (on conflicting and non-conflicting prompts).
     deliverables:
       - artifacts/baseline_metrics_test_set.json (ΔMIX, ΔSINGLE_POLICY, KL, histograms, FPR on controls)
     acceptance:
@@ -460,18 +354,14 @@ steps:
     title: Plots & 1-pager packaging
     actions:
       - notebooks/figs.ipynb to render:
-        - P1: Type histograms (baseline vs best α†) — Final Test Set
+        - P1: Type histograms (baseline vs best α†) — Validation and Final Test Set
         - P2: Dose–response curve (MIX vs α with CI) — Validation and Test
-        - P3: Leave-one-family-out retained gain
-        - P4: KL & Top-k overlap on controls
-        - P5: Conflict-Head Atlas heatmap (layer × head) if Step 8 run
+        - P3: KL & Top-k overlap on controls (bar plot with CI) — Validation and Test controls
       - EXEC_SUMMARY.md with claim, 2 plots, one example, key numbers; include a box on the Type-2 negative result.
     deliverables:
       - artifacts/P1.png
       - artifacts/P2.png
       - artifacts/P3.png
-      - artifacts/P4.png
-      - artifacts/P5.png
       - EXEC_SUMMARY.md
     acceptance:
       - All figures render; summary includes exact numbers vs thresholds; paths printed.

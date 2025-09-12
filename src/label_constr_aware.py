@@ -184,7 +184,40 @@ OUTPUT FORMAT (XML):
 """
     return judge_prompt
 
-# ---------- Interventions functions -------------------------------
+# ---------- Interventions functions ------------------------------------------------------------------------------------------------------------------------
+
+def run_files(save_root: Path, run_tag: str):
+    """Return expected file paths for a labeled run."""
+    raw   = save_root / f"{run_tag}_labels_raw.jsonl"
+    final = save_root / f"{run_tag}_labels.jsonl"
+    stats = save_root / f"{run_tag}_label_stats.json"
+    return raw, final, stats
+
+def labels_exist(save_root: Path, run_tag: str) -> bool:
+    """True if ALL expected outputs for a run already exist."""
+    raw, final, stats = run_files(save_root, run_tag)
+    return raw.exists() and final.exists() and stats.exists()
+
+def load_final_labels(save_root: Path, run_tag: str) -> list[dict]:
+    """Load final labels jsonl for a run_tag."""
+    _, final, _ = run_files(save_root, run_tag)
+    if not final.exists():
+        return []
+    rows = []
+    with final.open("r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                rows.append(json.loads(line))
+    return rows
+
+def type5_rate_from_finals(finals: list[dict]) -> tuple[float, float, int]:
+    """Compute Type-5 and ¬Type-5 rates from final labels records (snippet A schema)."""
+    N = len(finals)
+    if N == 0:
+        return 0.0, 1.0, 0
+    t5 = sum(1 for r in finals if r.get("type") == 5)
+    rate5 = t5 / N
+    return float(rate5), float(1.0 - rate5), int(N)
 
 def judge_prompt_classic_type5(prompt_text: str, output_text: str) -> str:
     return f"""You are a precise classifier for AI assistant responses to conflicting instructions.
@@ -269,6 +302,137 @@ def label_batch(model_name: str, items: List[Tuple[str, str]], constraint_aware:
         types.append(t)
         print(f"\n\nJudged Type-{t}\nPrompt: {prompt_text[:50]}\nResponse {output_text[:100]}.")
     return types
+
+def label_batch_full(judge_model: str, items: List[Dict], constraint_aware: bool=False) -> List[Dict]:
+    """
+    items: list of dicts with keys:
+      - prompt_id (str)
+      - sample_idx (int)
+      - text (prompt text)
+      - output_text (model output)
+    Returns list of dicts with the same keys +:
+      - type (int)
+      - rationale (str)
+      - constraint-aware extras if available: constraint_A, constraint_B, outputs, satisfies_A, satisfies_B
+    """
+    labeled = []
+    for it in items:
+        try:
+            t, rationale = judge_label(  # uses your existing judge function that returns (type, rationale, extras)
+                model_name=judge_model,
+                prompt_text=it["text"],
+                output_text=it["output_text"],
+                constraint_aware=constraint_aware
+            )
+            print(f"\n\nJudged Type-{t}\nPrompt: {it['text'][:50]}\nResponse {it['output_text'][:100]}.")
+        except Exception as e:
+            import time
+            print(f"Labeling failed with {e}, short retrying --- up to 5 times after 10s...")
+            labels = None
+            for attempt in range(5):
+                time.sleep(10)
+                try:
+                    t, rationale = judge_label(  # uses your existing judge function that returns (type, rationale, extras)
+                        model_name=judge_model,
+                        prompt_text=it["text"],
+                        output_text=it["output_text"],
+                        constraint_aware=constraint_aware
+                    )
+                    print("Retry succeeded.")
+                    print(f"\n\nJudged Type-{t}\nPrompt: {it['text'][:50]}\nResponse {it['output_text'][:100]}.")
+                    break
+                except Exception as e2:
+                    print(f"Short retry {attempt+1} failed with {e2}.")
+            if labels is None:
+                print(f"Labeling failed with {e}, long retrying --- up to 5 times after 120s...")
+                for attempt in range(5):
+                    time.sleep(120)
+                    try:
+                        t, rationale = judge_label(  # uses your existing judge function that returns (type, rationale, extras)
+                            model_name=judge_model,
+                            prompt_text=it["text"],
+                            output_text=it["output_text"],
+                            constraint_aware=constraint_aware
+                        )
+                        print("Retry succeeded.")
+                        print(f"\n\nJudged Type-{t}\nPrompt: {it['text'][:50]}\nResponse {it['output_text'][:100]}.")
+                        break
+                    except Exception as e2:
+                        print(f"Long retry {attempt+1} failed with {e2}.")
+            if labels is None:
+                raise RuntimeError("Labeling failed after short and long retries.")
+
+        rec = {
+            "prompt_id": it["prompt_id"],
+            "sample_idx": it["sample_idx"],
+            "type": t,
+            "rationale": rationale or "",
+            "text": it["text"],
+            "output_text": it["output_text"],
+        }
+        labeled.append(rec)
+    return labeled
+
+def _append_jsonl(handle, obj: dict):
+    line = json.dumps(obj, ensure_ascii=False) + "\n"
+    handle.write(line)
+    handle.flush()
+    os.fsync(handle.fileno())
+
+def write_jsonl(path: Path, rows: List[dict]):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as f:
+        for r in rows:
+            _append_jsonl(f, r)
+
+def save_labeled_results(save_root: Path, run_tag: str, labeled_raw: list[dict], constraint_aware: bool):
+    """(Unchanged from prior answer) Writes *_labels_raw.jsonl, *_labels.jsonl, *_label_stats.json"""
+    save_root.mkdir(parents=True, exist_ok=True)
+    raw_path, final_path, stats_path = run_files(save_root, run_tag)
+
+    # raw
+    with raw_path.open("w", encoding="utf-8") as f:
+        for r in labeled_raw:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+    # final
+    RESPONSE_TYPES = {
+        1: {"name": "Type-1 Refusal-only", "aggregate": "OTHER"},
+        2: {"name": "Type-2 Refusal+Clarification", "aggregate": "OTHER"},
+        3: {"name": "Type-3 Pick-one", "aggregate": "PRIORITIZE"},
+        4: {"name": "Type-4 Mix/compromise", "aggregate": "MIX"},
+        5: {"name": "Type-5 Multiple outputs", "aggregate": "OTHER"},
+        6: {"name": "Type-6 Normal Behavior", "aggregate": "OTHER"},
+        7: {"name": "Type-7 Other", "aggregate": "OTHER"},
+    }
+    finals = [{
+        "prompt_id": r["prompt_id"],
+        "sample_idx": r["sample_idx"],
+        "type": r["type"],
+        "aggregate": RESPONSE_TYPES.get(r["type"], {"aggregate":"OTHER"})["aggregate"],
+        "rationale": r.get("rationale", "")
+    } for r in labeled_raw]
+    with final_path.open("w", encoding="utf-8") as f:
+        for r in finals:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+    # stats
+    total_final = len(finals)
+    label_counts = Counter(r["type"] for r in finals)
+    stats = {
+        "total_samples": total_final,
+        "total_prompts": len(set(r["prompt_id"] for r in finals)),
+        "label_distribution_by_type": {k: f"{v} ({(v/max(1,total_final)*100):.2f}%)" for k, v in label_counts.items()},
+        "label_distribution_by_aggregate": {
+            agg: f"{cnt} ({(cnt/max(1,total_final)*100):.2f}%)"
+            for agg, cnt in Counter(r["aggregate"] for r in finals).items()
+        },
+        "constraint_aware": constraint_aware,
+    }
+    stats_path.write_text(json.dumps(stats, indent=2), encoding="utf-8")
+    print(f"💾 Saved: {raw_path}, {final_path}, {stats_path}")
+
+# ---------- Interventions functions ------------------------------------------------------------------------------------------------------------------------
 
 # ---------- Parsing judge output (supports both prompts) ----------
 

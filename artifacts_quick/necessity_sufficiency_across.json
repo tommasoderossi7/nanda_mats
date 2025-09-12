@@ -1,0 +1,26 @@
+{
+  "baseline": {
+    "type5_rate": 0.5,
+    "not_type5_rate": 0.5,
+    "decode mode": "greedy"
+  },
+  "addition": {
+    "alpha": 0.3,
+    "not_type5_rate": 0.5,
+    "delta_not_type5": 0.0,
+    "decode mode": "greedy"
+  },
+  "ablation": {
+    "not_type5_rate": 0.5,
+    "delta_not_type5": 0.0,
+    "decode mode": "greedy"
+  },
+  "linear_probe_auc": {
+    "auc": 0.65375,
+    "ci95": [
+      0.4233854166666667,
+      0.7936249999999999
+    ],
+    "site_key": "layer_mid_t2"
+  }
+}
