@@ -11,3 +11,4 @@ models/
 .ipynb_checkpoints/
 **/.pytest_cache/
 .env
+archive/
